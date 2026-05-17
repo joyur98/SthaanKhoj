@@ -1,13 +1,39 @@
+import logo2 from "../assets/logo2.png"
+
 function Navbar() {
   return (
-    <nav className="flex justify-between items-center px-8 py-5 bg-black text-white">
-      <h1 className="text-2xl font-bold">SthaanKhoj</h1>
+    <nav className="flex justify-between items-center px-16 py-6">
 
-      <div className="flex gap-6">
-        <a href="#" className="hover:text-gray-400">Home</a>
-        <a href="#" className="hover:text-gray-400">Explore</a>
-        <a href="#" className="hover:text-gray-400">About</a>
+      {/* Left */}
+      <div className="flex items-center gap-3">
+        <img
+          src={logo2}
+          alt="logo"
+          style={{ width: "40px", height: "40px" }}
+        />
+
+        <h1 className="text-3xl font-bold">
+          <span className="text-[#07122b]">Sthaan</span>
+          <span className="text-green-700">Khoj</span>
+        </h1>
       </div>
+
+      {/* Center */}
+      <div className="flex gap-10 font-medium text-[#07122b]">
+        <a href="#" className="text-green-700 border-b-2 border-green-700 pb-1">
+          Home
+        </a>
+
+        <a href="#">Find Rooms</a>
+        <a href="#">Favorites</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact</a>
+      </div>
+
+      {/* Right */}
+      <button className="bg-green-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-800 transition">
+        Post a Room
+      </button>
     </nav>
   )
 }

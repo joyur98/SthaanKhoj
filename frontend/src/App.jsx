@@ -4,7 +4,7 @@ import Features from "./components/Features"
 
 function App() {
   return (
-    <div>
+    <div className="bg-[#f8f7f4] min-h-screen">
       <Navbar />
       <Hero />
       <Features />
