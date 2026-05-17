@@ -12,6 +12,7 @@ function Register() {
   const [focused, setFocused] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const navigate = useNavigate()
+  navigate("/home")
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })

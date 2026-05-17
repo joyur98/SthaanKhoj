@@ -1,4 +1,5 @@
 import logo2 from "../assets/logo2.png"
+import { Link } from "react-router-dom"
 
 function Navbar() {
   return (
@@ -20,14 +21,13 @@ function Navbar() {
 
       {/* Center */}
       <div className="flex gap-10 font-medium text-[#07122b]">
-        <a href="#" className="text-green-700 border-b-2 border-green-700 pb-1">
+        <Link to="/home" className="hover:text-green-700 transition">
           Home
-        </a>
-
-        <a href="#">Find Rooms</a>
-        <a href="#">Favorites</a>
-        <a href="#">About Us</a>
-        <a href="#">Contact</a>
+        </Link>
+        <Link to="/find-rooms">Find Rooms</Link>
+        <Link to="/favorites">Favorites</Link>
+        <Link to="/about">About Us</Link>
+        <Link to="/contact">Contact</Link>
       </div>
 
       {/* Right */}
