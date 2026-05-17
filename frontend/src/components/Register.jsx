@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 function Register() {
   const [role, setRole] = useState("student")
@@ -10,6 +11,7 @@ function Register() {
   })
   const [focused, setFocused] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -18,7 +20,10 @@ function Register() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 2000)
+    setTimeout(() => {
+      setSubmitted(false)
+      navigate("/home")
+    }, 2000)
   }
 
   return (
