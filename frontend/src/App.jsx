@@ -1,14 +1,15 @@
-import Navbar from "./components/Navbar"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import Register from "./components/Register"
 import Hero from "./components/Hero"
-import Features from "./components/Features"
 
 function App() {
   return (
-    <div className="bg-[#f8f7f4] min-h-screen">
-      <Navbar />
-      <Hero />
-      <Features />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Register />} />
+        <Route path="/home" element={<Hero />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
