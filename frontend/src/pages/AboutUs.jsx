@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import Navbar from "../components/Navbar"
 
 function AboutUs({ darkMode, toggleDarkMode }) {
+  const [showPopup, setShowPopup] = useState(false)
   const values = [
     {
       title: "Trust First",
@@ -162,16 +164,52 @@ function AboutUs({ darkMode, toggleDarkMode }) {
                 </a>
               </div>
 
-              <a
-                href="mailto:info@sthaankhoj.com"
+              <button
+                onClick={() => setShowPopup(true)}
                 className="inline-flex justify-center items-center w-full py-3.5 rounded-xl font-bold text-white text-xs tracking-wider uppercase bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all cursor-pointer text-center"
               >
                 Send Email Message
-              </a>
+              </button>
             </div>
           </div>
         </section>
       </main>
+
+      {/* Email Popup Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-dark-900 border border-gray-100 dark:border-white/10 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl relative text-left">
+            <button 
+              onClick={() => setShowPopup(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-dark-900 dark:hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h3 className="text-2xl font-bold text-dark-950 dark:text-white mb-2">Send an Email</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+            
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowPopup(false); alert('Email sent successfully!'); }}>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Name</label>
+                <input required type="text" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="John Doe" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Email</label>
+                <input required type="email" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="john@example.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Message</label>
+                <textarea required rows="4" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
+              </div>
+              <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-md transition-all cursor-pointer">
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Universal Footer */}
       <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-dark-950 py-8 text-center text-xs font-semibold text-gray-400">

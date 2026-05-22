@@ -33,51 +33,7 @@ function Hero() {
               </p>
             </div>
 
-            {/* Premium Floating Search Widget */}
-            <div className="glass-card dark:glass-card-dark rounded-3xl p-5 md:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] border border-white/60 dark:border-white/10 space-y-4 max-w-2xl">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Location Input */}
-                <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    📍 Location
-                  </label>
-                  <select className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none transition focus:border-primary-500">
-                    <option>Dhulikhel (KU Gate)</option>
-                    <option>28 Kilo</option>
-                    <option>Shanti Ban</option>
-                    <option>Banepa</option>
-                  </select>
-                </div>
 
-                {/* Room Type */}
-                <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    🏠 Room Type
-                  </label>
-                  <select className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none transition focus:border-primary-500">
-                    <option>Single Room</option>
-                    <option>Shared Room</option>
-                    <option>Flat / Apartment</option>
-                  </select>
-                </div>
-
-                {/* Budget Range */}
-                <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    💰 Monthly Rent
-                  </label>
-                  <select className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none transition focus:border-primary-500">
-                    <option>Rs. 4,000 - 6,000</option>
-                    <option>Rs. 6,000 - 9,000</option>
-                    <option>Rs. 9,000+</option>
-                  </select>
-                </div>
-              </div>
-
-              <button className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_16px_rgba(16,185,129,0.25)] hover:shadow-[0_6px_22px_rgba(16,185,129,0.35)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
-                Search Accommodations
-              </button>
-            </div>
 
             {/* Quick trust metrics */}
             <div className="flex flex-wrap gap-x-8 gap-y-3 pt-2 text-left">

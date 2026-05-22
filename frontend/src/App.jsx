@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/Home"
 import Register from "./pages/Register"
 import AboutUs from "./pages/AboutUs"
+import FindRooms from "./pages/FindRooms"
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -57,6 +58,12 @@ function App() {
           path="/home"
           element={
             <Home darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          }
+        />
+        <Route
+          path="/find-rooms"
+          element={
+            <FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
           }
         />
         <Route
