@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 
 import Home from "./pages/Home"
 import Register from "./pages/Register"
+import Login from "./pages/Login"
 import AboutUs from "./pages/AboutUs"
 import FindRooms from "./pages/FindRooms"
 
@@ -52,6 +53,12 @@ function App() {
           path="/"
           element={
             <Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
           }
         />
         <Route
