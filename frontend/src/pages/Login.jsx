@@ -2,6 +2,14 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logo2 from "../assets/logo2.png"
 
+import { auth, db, googleProvider } from "../firebase"
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+} from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
+
 function Login({ darkMode }) {
   const navigate = useNavigate()
   const [role, setRole] = useState("student")
@@ -10,23 +18,74 @@ function Login({ darkMode }) {
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [resetSent, setResetSent] = useState(false)
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
     setError("")
   }
 
-  const handleSubmit = (e) => {
+  // After any sign-in, verify the user's role matches what they selected
+  const verifyRoleAndRedirect = async (user) => {
+    const snap = await getDoc(doc(db, "users", user.uid))
+    if (snap.exists()) {
+      const savedRole = snap.data().role
+      if (savedRole && savedRole !== role) {
+        setError(`This account is registered as a ${savedRole}. Please select the correct role.`)
+        setSubmitted(false)
+        return
+      }
+    }
+    navigate("/home")
+  }
+
+  // Email + Password sign-in
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.email || !form.password) {
-      setError("Please fill in all fields.")
+    setError("")
+    setSubmitted(true)
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, form.email, form.password)
+      await verifyRoleAndRedirect(user)
+    } catch (err) {
+      const messages = {
+        "auth/user-not-found": "No account found with this email.",
+        "auth/wrong-password": "Incorrect password. Please try again.",
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/invalid-credential": "Invalid email or password.",
+        "auth/too-many-requests": "Too many attempts. Please try again later.",
+      }
+      setError(messages[err.code] || "Sign-in failed. Please try again.")
+      setSubmitted(false)
+    }
+  }
+
+  // Google sign-in
+  const handleGoogle = async () => {
+    setError("")
+    try {
+      const { user } = await signInWithPopup(auth, googleProvider)
+      await verifyRoleAndRedirect(user)
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError("Google sign-in failed. Please try again.")
+      }
+    }
+  }
+
+  // Forgot password
+  const handleForgotPassword = async () => {
+    if (!form.email) {
+      setError("Enter your email above first, then click Forgot password.")
       return
     }
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
-      navigate("/home")
-    }, 1800)
+    try {
+      await sendPasswordResetEmail(auth, form.email)
+      setResetSent(true)
+      setError("")
+    } catch (err) {
+      setError("Could not send reset email. Check the address and try again.")
+    }
   }
 
   return (
@@ -34,11 +93,9 @@ function Login({ darkMode }) {
 
       {/* ── Left Panel ── */}
       <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-16 relative mesh-gradient overflow-hidden">
-
         <div className="absolute top-[20%] right-[-10%] w-[350px] h-[350px] bg-primary-500/20 rounded-full blur-[100px] animate-pulse-slow"></div>
         <div className="absolute bottom-[10%] left-[-15%] w-[400px] h-[400px] bg-indigo-500/15 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: "3s" }}></div>
 
-        {/* Logo */}
         <div className="relative z-10 flex items-center gap-3.5 animate-fadeSlideDown">
           <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <img src={logo2} alt="SthaanKhoj Logo" className="w-10 h-10 object-contain" />
@@ -53,7 +110,6 @@ function Login({ darkMode }) {
           </div>
         </div>
 
-        {/* Core Selling Points */}
         <div className="relative z-10 space-y-10 my-auto text-left max-w-sm">
           <div className="space-y-4">
             <div className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
@@ -65,7 +121,6 @@ function Login({ darkMode }) {
               Your next room is one sign-in away.
             </h2>
           </div>
-
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-lg text-primary-300 shrink-0">✓</div>
@@ -84,7 +139,6 @@ function Login({ darkMode }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="relative z-10 flex justify-between items-center text-xs text-gray-400 font-medium">
           <p>© 2026 SthaanKhoj. Built for KU.</p>
           <a href="#" className="hover:text-white transition">Privacy Policy</a>
@@ -136,6 +190,20 @@ function Login({ darkMode }) {
             </button>
           </div>
 
+          {/* Error banner */}
+          {error && (
+            <div className="mb-6 px-4 py-3 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 text-xs font-semibold text-red-500 dark:text-red-400">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {/* Password reset success */}
+          {resetSent && (
+            <div className="mb-6 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              ✅ Reset email sent! Check your inbox.
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -165,7 +233,11 @@ function Login({ darkMode }) {
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Password
                 </label>
-                <button type="button" className="text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                >
                   Forgot password?
                 </button>
               </div>
@@ -193,13 +265,6 @@ function Login({ darkMode }) {
                 </button>
               </div>
             </div>
-
-            {/* Error */}
-            {error && (
-              <p className="text-xs font-semibold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 px-4 py-2.5 rounded-xl">
-                ⚠️ {error}
-              </p>
-            )}
 
             {/* Submit */}
             <button
@@ -229,6 +294,7 @@ function Login({ darkMode }) {
             {/* Google */}
             <button
               type="button"
+              onClick={handleGoogle}
               className="w-full py-3.5 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-dark-950 text-sm font-bold text-dark-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-900 transition-all flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -247,7 +313,7 @@ function Login({ darkMode }) {
       <style>{`
         .mesh-gradient {
           background-color: #070d19;
-          background-image: 
+          background-image:
             radial-gradient(at 10% 20%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
             radial-gradient(at 90% 80%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
             radial-gradient(at 50% 10%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
