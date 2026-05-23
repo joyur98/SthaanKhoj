@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react"
 import logo2 from "../assets/logo2.png"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { auth } from "../firebase"
+import { signOut } from "firebase/auth"
 
 function Navbar({ darkMode, toggleDarkMode }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +31,15 @@ function Navbar({ darkMode, toggleDarkMode }) {
   ]
 
   const isActive = (path) => location.pathname === path
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      navigate("/")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
 
   return (
     <nav
@@ -83,34 +95,36 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
         {/* Right: Actions */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Premium Animated Theme Switcher Button */}
+          {/* Theme Switcher */}
           <button
             onClick={toggleDarkMode}
             className="p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 dark:border-white/10 dark:hover:border-white/20 bg-gray-50/50 hover:bg-gray-50 dark:bg-white/5 dark:hover:bg-white/10 text-gray-500 hover:text-dark-950 dark:text-gray-400 dark:hover:text-white transition-all duration-300 active:scale-95 shadow-[0_2px_8px_rgba(0,0,0,0.02)] focus:outline-none cursor-pointer"
             aria-label="Toggle Theme"
           >
             {darkMode ? (
-              // Sun Icon
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 transition-transform duration-500 hover:rotate-45">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m0 13.5V21M4.93 4.93l1.58 1.58m9.75 9.75l1.58 1.58M3 12h2.25m13.5 0H21M5.75 18.25l1.58-1.58m9.75-9.75l1.58-1.58M12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
               </svg>
             ) : (
-              // Moon Icon
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 transition-transform duration-500 hover:-rotate-12">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
               </svg>
             )}
           </button>
 
-          <Link
-            to="/register"
-            className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition duration-300 px-4 py-2"
-          >
-            Sign In
-          </Link>
-          
           <button className="relative overflow-hidden px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer">
             Post a Room
+          </button>
+
+          {/* Log Out Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 active:scale-95 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+            Log Out
           </button>
         </div>
 
@@ -121,21 +135,9 @@ function Navbar({ darkMode, toggleDarkMode }) {
           aria-label="Toggle Menu"
         >
           <div className="w-6 h-5 relative flex flex-col justify-between">
-            <span
-              className={`w-full h-0.5 bg-current rounded-full transition-all duration-300 ${
-                mobileMenuOpen ? "rotate-45 translate-y-[9px]" : ""
-              }`}
-            ></span>
-            <span
-              className={`h-0.5 bg-current rounded-full transition-all duration-300 ${
-                mobileMenuOpen ? "opacity-0 w-0" : "w-full"
-              }`}
-            ></span>
-            <span
-              className={`w-full h-0.5 bg-current rounded-full transition-all duration-300 ${
-                mobileMenuOpen ? "-rotate-45 -translate-y-[9px]" : ""
-              }`}
-            ></span>
+            <span className={`w-full h-0.5 bg-current rounded-full transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[9px]" : ""}`}></span>
+            <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ${mobileMenuOpen ? "opacity-0 w-0" : "w-full"}`}></span>
+            <span className={`w-full h-0.5 bg-current rounded-full transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[9px]" : ""}`}></span>
           </div>
         </button>
       </div>
@@ -166,19 +168,8 @@ function Navbar({ darkMode, toggleDarkMode }) {
               onClick={() => setMobileMenuOpen(false)}
               className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-dark-900 dark:hover:text-white transition-all"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -211,18 +202,21 @@ function Navbar({ darkMode, toggleDarkMode }) {
               {darkMode ? "☀️" : "🌙"}
             </button>
           </div>
-          <Link
-            to="/register"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition duration-300"
-          >
-            Sign In
-          </Link>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 shadow-md text-center cursor-pointer"
           >
             Post a Room
+          </button>
+          {/* Mobile Log Out */}
+          <button
+            onClick={() => { setMobileMenuOpen(false); handleLogout() }}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+            Log Out
           </button>
         </div>
       </div>
