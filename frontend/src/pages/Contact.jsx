@@ -24,9 +24,9 @@ function ContactUs({ darkMode, toggleDarkMode }) {
     {
       icon: "📧",
       label: "Email Us",
-      value: "info@sthaankhoj.com",
+      value: "sthaankhoj@gmail.com",
       sub: "We reply within 12 hours",
-      href: "mailto:info@sthaankhoj.com",
+      href: "mailto:sthaankhoj@gmail.com",
       color: "primary",
     },
     {
@@ -261,7 +261,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
               <div className="space-y-3">
                 {[
-                  { icon: "📧", label: "Email", val: "info@sthaankhoj.com" },
+                  { icon: "📧", label: "Email", val: "sthaankhoj@gmail.com" },
                   { icon: "📍", label: "Location", val: "Dhulikhel, Kavrepalanchok" },
                   { icon: "🕐", label: "Hours", val: "Sun–Fri, 9AM–6PM NPT" },
                 ].map((item, i) => (
