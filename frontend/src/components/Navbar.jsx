@@ -27,7 +27,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
     { name: "Find Rooms", path: "/find-rooms" },
     { name: "Favorites", path: "/favorites" },
     { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: "Contact", path: "/contact" }
   ]
 
   const isActive = (path) => location.pathname === path

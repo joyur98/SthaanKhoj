@@ -8,6 +8,7 @@ import Register from "./pages/Register"
 import Login from "./pages/Login"
 import AboutUs from "./pages/AboutUs"
 import FindRooms from "./pages/FindRooms"
+import Contact from "./pages/Contact" 
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null // still loading, render nothing
@@ -95,6 +96,14 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <AboutUs darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <ProtectedRoute user={user}>
+              <Contact darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             </ProtectedRoute>
           }
         />
