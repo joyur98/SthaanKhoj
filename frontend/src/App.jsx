@@ -9,6 +9,7 @@ import Login from "./pages/Login"
 import AboutUs from "./pages/AboutUs"
 import FindRooms from "./pages/FindRooms"
 import Contact from "./pages/Contact" 
+import Favorites from "./pages/Favorites" 
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null // still loading, render nothing
@@ -107,6 +108,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute user={user}>
+              <Favorites darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+          />
+          
       </Routes>
     </BrowserRouter>
   )
