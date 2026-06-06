@@ -8,17 +8,18 @@ import Register from "./pages/Register"
 import Login from "./pages/Login"
 import AboutUs from "./pages/AboutUs"
 import FindRooms from "./pages/FindRooms"
-import Contact from "./pages/Contact" 
-import Favorites from "./pages/Favorites" 
+import Contact from "./pages/Contact"
+import Favorites from "./pages/Favorites"
+import PostRoom from "./pages/PostRoom"   // ← new
 
 function ProtectedRoute({ user, children }) {
-  if (user === undefined) return null // still loading, render nothing
+  if (user === undefined) return null
   if (!user) return <Navigate to="/" replace />
   return children
 }
 
 function App() {
-  const [user, setUser] = useState(undefined) // undefined = auth still loading
+  const [user, setUser] = useState(undefined)
 
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme")
@@ -26,10 +27,9 @@ function App() {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
   })
 
-  // Listen to Firebase auth state — handles logout automatically
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser) // null when signed out, object when signed in
+      setUser(currentUser)
     })
     return () => unsubscribe()
   }, [])
@@ -115,8 +115,15 @@ function App() {
               <Favorites darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             </ProtectedRoute>
           }
-          />
-          
+        />
+        <Route
+          path="/post-room"
+          element={
+            <ProtectedRoute user={user}>
+              <PostRoom darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )
