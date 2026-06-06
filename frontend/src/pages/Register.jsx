@@ -1,14 +1,9 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logo2 from "../assets/logo2.png"
-
-import { auth, db, googleProvider } from "../firebase"
-import {
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  updateProfile,
-} from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { registerUser, googleSignIn } from "../services/api"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "../firebase"
 
 function Register({ darkMode }) {
   const [role, setRole] = useState("student")
@@ -28,67 +23,82 @@ function Register({ darkMode }) {
     setError("")
   }
 
-  // Save user profile to Firestore after any sign-up method
-  const saveUserToFirestore = async (user, overrideName = null) => {
-    await setDoc(
-      doc(db, "users", user.uid),
-      {
-        fullName: overrideName ?? user.displayName ?? formData.fullName,
-        email: user.email,
-        role,
-        createdAt: serverTimestamp(),
-      },
-      { merge: true } // won't overwrite if they already exist (e.g. returning Google user)
-    )
-  }
-
-  // Email + Password sign-up
+  // Email + Password sign-up using backend
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
 
+    if (!formData.fullName.trim()) {
+      setError("Full name is required.")
+      return
+    }
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.")
       return
     }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters.")
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.")
       return
     }
 
     setSubmitted(true)
     try {
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      )
-      await updateProfile(user, { displayName: formData.fullName })
-      await saveUserToFirestore(user, formData.fullName)
+      // 1. Create account on backend (creates Firebase Auth user + Firestore profile)
+      await registerUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: role,
+        phone: "",
+      })
+      
+      // 2. Sign in on frontend
+      await signInWithEmailAndPassword(auth, formData.email, formData.password)
+      
       navigate("/home")
     } catch (err) {
-      // Map Firebase error codes to friendly messages
+      console.error("Registration error:", err)
       const messages = {
         "auth/email-already-in-use": "An account with this email already exists.",
         "auth/invalid-email": "Please enter a valid email address.",
-        "auth/weak-password": "Password must be at least 6 characters.",
+        "auth/weak-password": "Password must be at least 8 characters.",
       }
-      setError(messages[err.code] || "Something went wrong. Please try again.")
+      setError(messages[err.code] || err.message || "Something went wrong. Please try again.")
       setSubmitted(false)
     }
   }
 
-  // Google sign-up / sign-in
+  // Google sign-up - FIXED: Uses dedicated googleSignIn endpoint
   const handleGoogle = async () => {
     setError("")
+    setSubmitted(true)
     try {
-      const { user } = await signInWithPopup(auth, googleProvider)
-      await saveUserToFirestore(user)
+      const { signInWithPopup } = await import("firebase/auth")
+      const { auth, googleProvider } = await import("../firebase")
+      const result = await signInWithPopup(auth, googleProvider)
+      const user = result.user
+      
+      console.log("Google user signed in:", user.email)
+      console.log("User UID:", user.uid)
+      
+      // Use dedicated Google sign-in endpoint (doesn't try to recreate Auth user)
+      const { googleSignIn } = await import("../services/api")
+      await googleSignIn({
+        uid: user.uid,
+        email: user.email,
+        fullName: user.displayName || user.email.split('@')[0],
+        role: role,
+        phone: user.phoneNumber || "",
+      })
+      
+      console.log("Google user synced with backend successfully")
       navigate("/home")
     } catch (err) {
+      console.error("Google sign-in error:", err)
       if (err.code !== "auth/popup-closed-by-user") {
-        setError("Google sign-in failed. Please try again.")
+        setError(err.message || "Google sign-in failed. Please try again.")
       }
+      setSubmitted(false)
     }
   }
 
@@ -206,7 +216,7 @@ function Register({ darkMode }) {
               {[
                 { name: "fullName", label: "Full Name", type: "text", placeholder: "Aarav Shrestha" },
                 { name: "email", label: "Email Address", type: "email", placeholder: "aarav@ku.edu.np" },
-                { name: "password", label: "Password", type: "password", placeholder: "••••••••" },
+                { name: "password", label: "Password", type: "password", placeholder: "•••••••• (min 8 chars)" },
                 { name: "confirmPassword", label: "Confirm Password", type: "password", placeholder: "••••••••" },
               ].map((field) => (
                 <div key={field.name} className="space-y-1.5 text-left">
@@ -276,6 +286,7 @@ function Register({ darkMode }) {
             <button
               type="button"
               onClick={handleGoogle}
+              disabled={submitted}
               className="w-full py-3.5 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-dark-950 text-sm font-bold text-dark-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-900 transition-all flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react"
 import logo2 from "../assets/logo2.png"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { auth } from "../firebase"
-import { signOut } from "firebase/auth"
+import { useAuth } from "../context/AuthContext"
 
 function Navbar({ darkMode, toggleDarkMode }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, role, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,7 +34,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth)
+      await logout()
       navigate("/")
     } catch (error) {
       console.error("Logout failed:", error)
@@ -112,20 +112,28 @@ function Navbar({ darkMode, toggleDarkMode }) {
             )}
           </button>
 
-          <button className="relative overflow-hidden px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer">
-            Post a Room
-          </button>
+          {/* Post a Room - Only visible to landlords */}
+          {role === "landlord" && (
+            <Link
+              to="/post-room"
+              className="relative overflow-hidden px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer"
+            >
+              Post a Room
+            </Link>
+          )}
 
           {/* Log Out Button */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 active:scale-95 cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-            </svg>
-            Log Out
-          </button>
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 active:scale-95 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Log Out
+            </button>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -202,22 +210,30 @@ function Navbar({ darkMode, toggleDarkMode }) {
               {darkMode ? "☀️" : "🌙"}
             </button>
           </div>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 shadow-md text-center cursor-pointer"
-          >
-            Post a Room
-          </button>
+          
+          {/* Post a Room - Only visible to landlords in mobile menu */}
+          {role === "landlord" && (
+            <Link
+              to="/post-room"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 shadow-md text-center block cursor-pointer"
+            >
+              Post a Room
+            </Link>
+          )}
+          
           {/* Mobile Log Out */}
-          <button
-            onClick={() => { setMobileMenuOpen(false); handleLogout() }}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-            </svg>
-            Log Out
-          </button>
+          {user && (
+            <button
+              onClick={() => { setMobileMenuOpen(false); handleLogout() }}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Log Out
+            </button>
+          )}
         </div>
       </div>
     </nav>

@@ -1,17 +1,12 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logo2 from "../assets/logo2.png"
-
-import { auth, db, googleProvider } from "../firebase"
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from "firebase/auth"
-import { doc, getDoc } from "firebase/firestore"
+import { useAuth } from "../context/AuthContext"
+import { verifyToken, googleSignIn } from "../services/api"
 
 function Login({ darkMode }) {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [role, setRole] = useState("student")
   const [form, setForm] = useState({ email: "", password: "" })
   const [focused, setFocused] = useState("")
@@ -25,18 +20,24 @@ function Login({ darkMode }) {
     setError("")
   }
 
-  // After any sign-in, verify the user's role matches what they selected
-  const verifyRoleAndRedirect = async (user) => {
-    const snap = await getDoc(doc(db, "users", user.uid))
-    if (snap.exists()) {
-      const savedRole = snap.data().role
+  // After sign-in, verify the user's role matches what they selected
+  const verifyRoleAndRedirect = async () => {
+    try {
+      const data = await verifyToken()
+      const savedRole = data.role
       if (savedRole && savedRole !== role) {
         setError(`This account is registered as a ${savedRole}. Please select the correct role.`)
         setSubmitted(false)
-        return
+        return false
       }
+      navigate("/home")
+      return true
+    } catch (err) {
+      console.error("Verify error:", err)
+      setError("Could not verify account. Please try again.")
+      setSubmitted(false)
+      return false
     }
-    navigate("/home")
   }
 
   // Email + Password sign-in
@@ -45,8 +46,8 @@ function Login({ darkMode }) {
     setError("")
     setSubmitted(true)
     try {
-      const { user } = await signInWithEmailAndPassword(auth, form.email, form.password)
-      await verifyRoleAndRedirect(user)
+      await login(form.email, form.password)
+      await verifyRoleAndRedirect()
     } catch (err) {
       const messages = {
         "auth/user-not-found": "No account found with this email.",
@@ -60,19 +61,6 @@ function Login({ darkMode }) {
     }
   }
 
-  // Google sign-in
-  const handleGoogle = async () => {
-    setError("")
-    try {
-      const { user } = await signInWithPopup(auth, googleProvider)
-      await verifyRoleAndRedirect(user)
-    } catch (err) {
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError("Google sign-in failed. Please try again.")
-      }
-    }
-  }
-
   // Forgot password
   const handleForgotPassword = async () => {
     if (!form.email) {
@@ -80,11 +68,65 @@ function Login({ darkMode }) {
       return
     }
     try {
+      const { sendPasswordResetEmail } = await import("firebase/auth")
+      const { auth } = await import("../firebase")
       await sendPasswordResetEmail(auth, form.email)
       setResetSent(true)
       setError("")
     } catch (err) {
       setError("Could not send reset email. Check the address and try again.")
+    }
+  }
+
+  // Google Sign-in - FIXED: Uses dedicated googleSignIn endpoint
+  const handleGoogleSignIn = async () => {
+    setError("")
+    setSubmitted(true)
+    try {
+      const { signInWithPopup } = await import("firebase/auth")
+      const { auth, googleProvider } = await import("../firebase")
+      const result = await signInWithPopup(auth, googleProvider)
+      const user = result.user
+      
+      console.log("Google user signed in:", user.email)
+      console.log("User UID:", user.uid)
+      
+      // Use dedicated Google sign-in endpoint to sync user to Firestore
+      try {
+        await googleSignIn({
+          uid: user.uid,
+          email: user.email,
+          fullName: user.displayName || user.email.split('@')[0],
+          role: role,
+          phone: user.phoneNumber || "",
+        })
+        console.log("Google user synced with backend successfully")
+      } catch (syncErr) {
+        console.error("Google sync error:", syncErr)
+        // If sync fails but user might already exist, try verify
+      }
+      
+      // Verify role and redirect
+      try {
+        const data = await verifyToken()
+        const savedRole = data.role
+        if (savedRole && savedRole !== role) {
+          setError(`This account is registered as a ${savedRole}. Please select the correct role.`)
+          setSubmitted(false)
+          return
+        }
+        navigate("/home")
+      } catch (verifyErr) {
+        console.error("Verify after Google error:", verifyErr)
+        setError("Could not verify account. Please try again.")
+        setSubmitted(false)
+      }
+    } catch (err) {
+      console.error("Google sign-in error:", err)
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError(err.message || "Google sign-in failed. Please try again.")
+      }
+      setSubmitted(false)
     }
   }
 
@@ -291,10 +333,11 @@ function Login({ darkMode }) {
               <div className="flex-1 h-px bg-gray-100 dark:bg-white/5" />
             </div>
 
-            {/* Google */}
+            {/* Google Sign-in - FIXED */}
             <button
               type="button"
-              onClick={handleGoogle}
+              onClick={handleGoogleSignIn}
+              disabled={submitted}
               className="w-full py-3.5 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-dark-950 text-sm font-bold text-dark-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-900 transition-all flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

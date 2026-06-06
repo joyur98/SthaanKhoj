@@ -72,6 +72,56 @@ router.post("/register", authLimiter, registerRules, validate, async (req, res, 
   }
 });
 
+router.post("/google-signin", async (req, res, next) => {
+  try {
+    const { email, fullName, role, uid, phone } = req.body;
+
+    if (!email || !uid) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Set custom claim for role
+    await auth.setCustomUserClaims(uid, { role });
+
+    // Create/Update Firestore profile
+    const now = new Date().toISOString();
+    const profile = {
+      uid,
+      email,
+      fullName: fullName || email.split('@')[0],
+      role,
+      phone: phone || null,
+      isActive: true,
+      updatedAt: now,
+    };
+
+    await db.collection("users").doc(uid).set(profile, { merge: true });
+
+    // Create role-specific sub-document
+    const subCollection = role === "student" ? "students" : "landlords";
+    const subProfile = {
+      uid,
+      email,
+      fullName: fullName || email.split('@')[0],
+      role,
+      updatedAt: now,
+      ...(role === "student" ? { savedProperties: [], bookings: [] } : {}),
+      ...(role === "landlord" ? { properties: [], verified: false } : {}),
+    };
+
+    await db.collection(subCollection).doc(uid).set(subProfile, { merge: true });
+
+    res.json({
+      message: "Google user synced successfully.",
+      uid,
+      role,
+    });
+  } catch (err) {
+    console.error("Google sign-in error:", err);
+    next(err);
+  }
+});
+
 /**
  * POST /api/auth/verify-token
  * Lightweight endpoint the frontend can use to validate a token and get user info.
