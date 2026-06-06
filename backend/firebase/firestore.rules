@@ -1,0 +1,93 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isStudent() {
+      return hasRole('student');
+    }
+
+    function isLandlord() {
+      return hasRole('landlord');
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── Students ───────────────────────────────────────────────────────────────
+    match /students/{studentId} {
+      allow read: if isSignedIn() && (isOwner(studentId) || isAdmin());
+      allow write: if isSignedIn() && (isOwner(studentId) || isAdmin());
+    }
+
+    // ── Landlords ──────────────────────────────────────────────────────────────
+    match /landlords/{landlordId} {
+      allow read: if isSignedIn() && (isOwner(landlordId) || isAdmin());
+      allow write: if isSignedIn() && (isOwner(landlordId) || isAdmin());
+    }
+
+    // ── Properties ─────────────────────────────────────────────────────────────
+    match /properties/{propertyId} {
+      // Anyone signed in can read active listings
+      allow read: if isSignedIn();
+      // Only the owning landlord or admin can write
+      allow create: if isLandlord() || isAdmin();
+      allow update, delete: if isAdmin() ||
+        (isLandlord() && resource.data.landlordId == request.auth.uid);
+    }
+
+    // ── Bookings ───────────────────────────────────────────────────────────────
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.studentId == request.auth.uid ||
+        resource.data.landlordId == request.auth.uid
+      );
+      allow create: if isStudent();
+      allow update: if isAdmin() ||
+        resource.data.landlordId == request.auth.uid ||
+        (resource.data.studentId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+      allow delete: if isAdmin();
+    }
+
+    // ── Reviews ────────────────────────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isStudent();
+      allow update, delete: if isAdmin() ||
+        resource.data.authorId == request.auth.uid;
+    }
+
+    // ── Notifications ──────────────────────────────────────────────────────────
+    match /notifications/{notificationId} {
+      allow read, update: if isSignedIn() &&
+        resource.data.userId == request.auth.uid;
+      allow create: if isAdmin();
+      allow delete: if isAdmin() ||
+        resource.data.userId == request.auth.uid;
+    }
+  }
+}
