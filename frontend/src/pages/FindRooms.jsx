@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { getProperties, toggleSavedProperty } from "../services/api"
 import Navbar from "../components/Navbar"
 
@@ -7,6 +8,7 @@ const ROOM_TYPE_LABELS = {
 }
 
 function FindRooms({ darkMode, toggleDarkMode }) {
+  const navigate = useNavigate()
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -65,13 +67,11 @@ function FindRooms({ darkMode, toggleDarkMode }) {
 
       <section className="relative overflow-hidden min-h-screen pt-8 pb-20 bg-[#fafbfc] dark:bg-[#0b1528] transition-colors duration-300">
 
-        {/* Ambient blobs */}
         <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-primary-100/10 dark:bg-primary-500/5 rounded-full blur-[140px] pointer-events-none"></div>
         <div className="absolute bottom-[10%] right-[-5%] w-[350px] h-[350px] bg-teal-100/10 dark:bg-teal-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
 
-          {/* Page Header — matches Features.jsx header */}
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 rounded-full border border-primary-100/40 dark:border-primary-900/30">
               <span className="text-[10px] font-extrabold text-primary-600 dark:text-primary-400 uppercase tracking-widest">
@@ -89,58 +89,36 @@ function FindRooms({ darkMode, toggleDarkMode }) {
             </p>
           </div>
 
-          {/* Filter Card */}
           <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] p-5 md:p-6 mb-8">
             <div className="flex flex-wrap gap-4 items-end">
-
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Min Price
-                </label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Min Price</label>
                 <input
-                  name="minPrice"
-                  type="number"
-                  value={filters.minPrice}
-                  onChange={handleFilterChange}
-                  placeholder="NPR"
+                  name="minPrice" type="number" value={filters.minPrice}
+                  onChange={handleFilterChange} placeholder="NPR"
                   className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Max Price
-                </label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Max Price</label>
                 <input
-                  name="maxPrice"
-                  type="number"
-                  value={filters.maxPrice}
-                  onChange={handleFilterChange}
-                  placeholder="NPR"
+                  name="maxPrice" type="number" value={filters.maxPrice}
+                  onChange={handleFilterChange} placeholder="NPR"
                   className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Location
-                </label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</label>
                 <input
-                  name="location"
-                  value={filters.location}
-                  onChange={handleFilterChange}
-                  placeholder="e.g. Dhulikhel"
+                  name="location" value={filters.location}
+                  onChange={handleFilterChange} placeholder="e.g. Dhulikhel"
                   className="w-36 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Availability
-                </label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Availability</label>
                 <select
-                  name="available"
-                  value={filters.available}
+                  name="available" value={filters.available}
                   onChange={handleFilterChange}
                   className="bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all cursor-pointer"
                 >
@@ -148,7 +126,6 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                   <option value="true">Available Now</option>
                 </select>
               </div>
-
               <div className="flex gap-3 ml-auto">
                 <button
                   onClick={clearFilters}
@@ -166,14 +143,12 @@ function FindRooms({ darkMode, toggleDarkMode }) {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mb-6 flex items-center gap-3 px-5 py-4 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-2xl text-red-600 dark:text-red-400 text-sm font-semibold">
               <span>⚠</span> {error}
             </div>
           )}
 
-          {/* Loading skeletons */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
@@ -200,22 +175,18 @@ function FindRooms({ darkMode, toggleDarkMode }) {
               <p className="text-sm font-semibold text-gray-400 dark:text-gray-500 mb-5">
                 {rooms.length} listing{rooms.length !== 1 ? "s" : ""} found
               </p>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rooms.map((room) => (
                   <div
                     key={room.id}
                     className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.06)] dark:hover:shadow-[0_20px_50px_rgba(16,185,129,0.04)] hover:-translate-y-1.5 transition-all duration-500 overflow-hidden"
                   >
-                    {/* Hover accent line — matches Features cards */}
                     <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    {/* Image */}
                     <div className="relative h-48 bg-gray-100 dark:bg-white/5 overflow-hidden">
                       {room.images?.[0] ? (
                         <img
-                          src={room.images[0]}
-                          alt={room.title}
+                          src={room.images[0]} alt={room.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
@@ -223,22 +194,16 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           🏠
                         </div>
                       )}
-
-                      {/* Room type badge */}
                       <span className="absolute top-3 left-3 glass-card dark:glass-card-dark px-3 py-1 rounded-full text-xs font-bold text-gray-700 dark:text-white border border-white/80 dark:border-white/10 backdrop-blur-sm">
                         {ROOM_TYPE_LABELS[room.roomType] || room.roomType}
                       </span>
-
-                      {/* Save button */}
                       <button
                         onClick={() => handleToggleSave(room.id)}
                         className="absolute top-3 right-3 p-2 glass-card dark:glass-card-dark rounded-full border border-white/80 dark:border-white/10 backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95"
                       >
                         <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
+                          xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                          strokeWidth={2} stroke="currentColor"
                           className={`w-4 h-4 transition-colors duration-200 ${
                             saved.has(room.id)
                               ? "fill-rose-500 stroke-rose-500"
@@ -250,7 +215,6 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                       </button>
                     </div>
 
-                    {/* Card content */}
                     <div className="p-5 space-y-3">
                       <div>
                         <h2 className="font-bold text-gray-900 dark:text-white text-sm leading-snug line-clamp-2">
@@ -264,20 +228,14 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           {room.location}
                         </p>
                       </div>
-
                       <p className="text-primary-600 dark:text-primary-400 font-extrabold text-lg leading-none">
                         NPR {room.price?.toLocaleString()}
                         <span className="text-gray-400 dark:text-gray-500 font-normal text-xs"> /month</span>
                       </p>
-
-                      {/* Amenities */}
                       {room.amenities?.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {room.amenities.slice(0, 3).map((a) => (
-                            <span
-                              key={a}
-                              className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                            >
+                            <span key={a} className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-semibold px-2.5 py-1 rounded-full">
                               {a}
                             </span>
                           ))}
@@ -288,7 +246,6 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           )}
                         </div>
                       )}
-
                       {room.availableFrom && (
                         <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
                           Available from{" "}
@@ -297,8 +254,10 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           })}
                         </p>
                       )}
-
-                      <button className="w-full mt-1 py-2.5 rounded-xl text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 active:scale-98">
+                      <button
+                        onClick={() => navigate(`/rooms/${room.id}`)}
+                        className="w-full mt-1 py-2.5 rounded-xl text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 active:scale-98"
+                      >
                         View Details
                       </button>
                     </div>

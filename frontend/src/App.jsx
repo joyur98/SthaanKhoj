@@ -10,7 +10,8 @@ import AboutUs from "./pages/AboutUs"
 import FindRooms from "./pages/FindRooms"
 import Contact from "./pages/Contact"
 import Favorites from "./pages/Favorites"
-import PostRoom from "./pages/PostRoom"   // ← new
+import PostRoom from "./pages/PostRoom"
+import RoomDetail from "./pages/RoomDetail"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
@@ -89,6 +90,14 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rooms/:id"
+          element={
+            <ProtectedRoute user={user}>
+              <RoomDetail darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             </ProtectedRoute>
           }
         />
