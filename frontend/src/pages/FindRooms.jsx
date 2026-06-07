@@ -96,7 +96,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <input
                   name="minPrice" type="number" value={filters.minPrice}
                   onChange={handleFilterChange} placeholder="NPR"
-                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -104,7 +104,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <input
                   name="maxPrice" type="number" value={filters.maxPrice}
                   onChange={handleFilterChange} placeholder="NPR"
-                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -112,7 +112,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <input
                   name="location" value={filters.location}
                   onChange={handleFilterChange} placeholder="e.g. Dhulikhel"
-                  className="w-36 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-36 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -120,7 +120,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <select
                   name="available" value={filters.available}
                   onChange={handleFilterChange}
-                  className="bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all cursor-pointer"
+                  className="bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all cursor-pointer"
                 >
                   <option value="">All</option>
                   <option value="true">Available Now</option>
