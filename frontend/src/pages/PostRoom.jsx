@@ -130,7 +130,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                   onChange={handleChange}
                   placeholder="e.g. Cozy room near KU main gate"
                   required
-                  className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 focus:border-primary-300 dark:focus:border-primary-700 transition-all duration-200"
+                  className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 focus:border-primary-300 dark:focus:border-primary-700 transition-all duration-200"
                 />
               </div>
 
@@ -146,7 +146,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                   placeholder="Describe the room, house rules, nearby facilities…"
                   required
                   rows={4}
-                  className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 focus:border-primary-300 dark:focus:border-primary-700 transition-all duration-200 resize-none"
+                  className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 focus:border-primary-300 dark:focus:border-primary-700 transition-all duration-200 resize-none"
                 />
               </div>
 
@@ -164,7 +164,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                     onChange={handleChange}
                     placeholder="e.g. 8000"
                     required
-                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
+                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -175,7 +175,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                     name="roomType"
                     value={form.roomType}
                     onChange={handleChange}
-                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200 cursor-pointer"
+                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200 cursor-pointer"
                   >
                     {ROOM_TYPES.map((t) => (
                       <option key={t} value={t} className="dark:bg-dark-900">
@@ -198,7 +198,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                     onChange={handleChange}
                     placeholder="e.g. Dhulikhel, Kavre"
                     required
-                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
+                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -211,7 +211,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                     value={form.availableFrom}
                     onChange={handleChange}
                     required
-                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
+                    className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                         value={url}
                         onChange={(e) => handleImageChange(i, e.target.value)}
                         placeholder="https://example.com/photo.jpg"
-                        className="flex-1 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
+                        className="flex-1 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
                       />
                       {form.images.length > 1 && (
                         <button

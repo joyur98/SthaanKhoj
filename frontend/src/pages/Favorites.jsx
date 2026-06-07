@@ -106,7 +106,7 @@ function Favorites({ darkMode, toggleDarkMode }) {
                 placeholder="Search saved rooms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none transition focus:border-rose-400"
+                className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-black dark:text-white outline-none transition focus:border-rose-400"
               />
             </div>
             <div className="md:w-64 space-y-1.5">
@@ -116,7 +116,7 @@ function Favorites({ darkMode, toggleDarkMode }) {
               <select
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 outline-none transition focus:border-rose-400"
+                className="w-full bg-gray-50/50 dark:bg-dark-900 hover:bg-gray-50 dark:hover:bg-dark-900/80 border border-gray-100 dark:border-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-black dark:text-white outline-none transition focus:border-rose-400"
               >
                 <option>All Locations</option>
                 <option>Dhulikhel (KU Gate)</option>

@@ -193,15 +193,15 @@ function AboutUs({ darkMode, toggleDarkMode }) {
             <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowPopup(false); alert('Email sent successfully!'); }}>
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Name</label>
-                <input required type="text" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="John Doe" />
+                <input required type="text" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="John Doe" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Email</label>
-                <input required type="email" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="john@example.com" />
+                <input required type="email" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="john@example.com" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Message</label>
-                <textarea required rows="4" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
+                <textarea required rows="4" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
               </div>
               <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-md transition-all cursor-pointer">
                 Send Message

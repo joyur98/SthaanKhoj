@@ -194,12 +194,12 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           🏠
                         </div>
                       )}
-                      <span className="absolute top-3 left-3 glass-card dark:glass-card-dark px-3 py-1 rounded-full text-xs font-bold text-gray-700 dark:text-white border border-white/80 dark:border-white/10 backdrop-blur-sm">
+                      <span className="absolute top-3 left-3 bg-white/90 dark:bg-dark-900/90 px-3 py-1 rounded-full text-xs font-extrabold text-black dark:text-white border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm">
                         {ROOM_TYPE_LABELS[room.roomType] || room.roomType}
                       </span>
                       <button
                         onClick={() => handleToggleSave(room.id)}
-                        className="absolute top-3 right-3 p-2 glass-card dark:glass-card-dark rounded-full border border-white/80 dark:border-white/10 backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95"
+                        className="absolute top-3 right-3 p-2 bg-white/90 dark:bg-dark-900/90 rounded-full border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

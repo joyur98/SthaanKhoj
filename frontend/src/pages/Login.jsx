@@ -263,7 +263,7 @@ function Login({ darkMode }) {
                 onBlur={() => setFocused("")}
                 placeholder={role === "student" ? "aarav@ku.edu.np" : "landlord@example.com"}
                 required
-                className={`w-full px-4 py-3.5 bg-gray-50/50 hover:bg-gray-50/80 dark:bg-dark-950 dark:hover:bg-dark-950/80 rounded-2xl border text-sm font-medium tracking-wide outline-none transition-all duration-300 dark:text-white ${focused === "email"
+                className={`w-full px-4 py-3.5 bg-gray-50/50 hover:bg-gray-50/80 dark:bg-dark-950 dark:hover:bg-dark-950/80 rounded-2xl border text-sm font-medium tracking-wide outline-none transition-all duration-300 text-black dark:text-white ${focused === "email"
                   ? "border-primary-500 bg-white dark:bg-dark-900 shadow-[0_0_0_4px_rgba(16,185,129,0.1)] ring-1 ring-primary-500"
                   : "border-gray-100 hover:border-gray-200 dark:border-white/5"}`}
               />
@@ -293,7 +293,7 @@ function Login({ darkMode }) {
                   onBlur={() => setFocused("")}
                   placeholder="••••••••"
                   required
-                  className={`w-full px-4 py-3.5 pr-12 bg-gray-50/50 hover:bg-gray-50/80 dark:bg-dark-950 dark:hover:bg-dark-950/80 rounded-2xl border text-sm font-medium tracking-wide outline-none transition-all duration-300 dark:text-white ${focused === "password"
+                  className={`w-full px-4 py-3.5 pr-12 bg-gray-50/50 hover:bg-gray-50/80 dark:bg-dark-950 dark:hover:bg-dark-950/80 rounded-2xl border text-sm font-medium tracking-wide outline-none transition-all duration-300 text-black dark:text-white ${focused === "password"
                     ? "border-primary-500 bg-white dark:bg-dark-900 shadow-[0_0_0_4px_rgba(16,185,129,0.1)] ring-1 ring-primary-500"
                     : "border-gray-100 hover:border-gray-200 dark:border-white/5"}`}
                 />

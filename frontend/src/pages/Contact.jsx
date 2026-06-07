@@ -174,7 +174,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors"
+                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
                       placeholder="Ram Sharma"
                     />
                   </div>
@@ -186,7 +186,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors"
+                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
                       placeholder="ram@example.com"
                     />
                   </div>
@@ -199,7 +199,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors"
+                    className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
                   >
                     <option value="" disabled>Select a subject…</option>
                     <option value="listing">Listing Inquiry</option>
@@ -219,7 +219,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-900 dark:text-white outline-none focus:border-primary-500 transition-colors resize-none"
+                    className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors resize-none"
                     placeholder="Tell us how we can help…"
                   ></textarea>
                 </div>
