@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createProperty } from "../services/api"
 import Navbar from "../components/Navbar"
+import { PickLocationMap } from "../components/RoomMap"
 
 const AMENITIES_OPTIONS = [
   "WiFi", "Parking", "Water Included", "Electricity Included",
@@ -29,6 +30,8 @@ function PostRoom({ darkMode, toggleDarkMode }) {
     availableFrom: "",
     roomType: "room",
     amenities: [],
+    lat: null,
+    lng: null,
   })
 
   const handleChange = (e) =>
@@ -41,6 +44,9 @@ function PostRoom({ darkMode, toggleDarkMode }) {
         ? f.amenities.filter((a) => a !== amenity)
         : [...f.amenities, amenity],
     }))
+
+  const handleLocationSelect = (lat, lng) =>
+    setForm((f) => ({ ...f, lat, lng }))
 
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files)
@@ -103,6 +109,8 @@ function PostRoom({ darkMode, toggleDarkMode }) {
         ...form,
         price: parseFloat(form.price),
         images,
+        lat: form.lat,
+        lng: form.lng,
       })
       setSuccess(true)
       setTimeout(() => navigate("/find-rooms"), 1500)
@@ -274,6 +282,18 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                     className="w-full bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
                   />
                 </div>
+              </div>
+
+              {/* Map Location Picker */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">
+                  Pin Location on Map
+                </label>
+                <PickLocationMap
+                  lat={form.lat}
+                  lng={form.lng}
+                  onLocationSelect={handleLocationSelect}
+                />
               </div>
 
               {/* Amenities */}

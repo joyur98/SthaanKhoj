@@ -5,11 +5,6 @@ import { propertyRules, paginationRules, validate } from "../middleware/validate
 
 const router = Router();
 
-/**
- * GET /api/properties
- * Public listing with optional filters.
- * query params: page, limit, minPrice, maxPrice, location, available
- */
 router.get("/", paginationRules, validate, async (req, res, next) => {
   try {
     const { minPrice, maxPrice, location, available } = req.query;
@@ -23,7 +18,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
 
     query = query.orderBy("createdAt", "desc").limit(limit);
 
-    // Cursor-based pagination
     if (req.query.startAfter) {
       const cursor = await db.collection("properties").doc(req.query.startAfter).get();
       if (cursor.exists) query = query.startAfter(cursor);
@@ -32,7 +26,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // Client-side location filter (Firestore can't do substring search natively)
     if (location) {
       const loc = location.toLowerCase();
       properties = properties.filter((p) => p.location?.toLowerCase().includes(loc));
@@ -42,7 +35,7 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
     res.json({
       data: properties,
       pagination: {
-        count:     properties.length,
+        count: properties.length,
         nextCursor: lastDoc ? lastDoc.id : null,
       },
     });
@@ -51,9 +44,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
   }
 });
 
-/**
- * GET /api/properties/:id
- */
 router.get("/:id", async (req, res, next) => {
   try {
     const snap = await db.collection("properties").doc(req.params.id).get();
@@ -66,37 +56,34 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-/**
- * POST /api/properties
- * Landlords only.
- */
 router.post("/", authenticate, requireLandlord, propertyRules, validate, async (req, res, next) => {
   try {
-    const { title, description, price, location, availableFrom, amenities, images, roomType } = req.body;
+    const { title, description, price, location, availableFrom, amenities, images, roomType, lat, lng } = req.body;
     const now = new Date().toISOString();
 
     const property = {
       title,
       description,
-      price:         parseFloat(price),
+      price:       parseFloat(price),
       location,
       availableFrom,
-      amenities:     amenities || [],
-      images:        images    || [],
-      roomType:      roomType  || "room",
-      landlordId:    req.user.uid,
-      isActive:      true,
-      isAvailable:   true,
-      createdAt:     now,
-      updatedAt:     now,
+      amenities:   amenities || [],
+      images:      images    || [],
+      roomType:    roomType  || "room",
+      lat:         lat       || null,
+      lng:         lng       || null,
+      landlordId:  req.user.uid,
+      isActive:    true,
+      isAvailable: true,
+      createdAt:   now,
+      updatedAt:   now,
     };
 
     const ref = await db.collection("properties").add(property);
 
-    // Add to landlord's property list
-    const landlordRef = db.collection("landlords").doc(req.user.uid);
+    const landlordRef  = db.collection("landlords").doc(req.user.uid);
     const landlordSnap = await landlordRef.get();
-    const existing = landlordSnap.data()?.properties || [];
+    const existing     = landlordSnap.data()?.properties || [];
     await landlordRef.update({ properties: [...existing, ref.id], updatedAt: now });
 
     res.status(201).json({ id: ref.id, ...property });
@@ -105,10 +92,6 @@ router.post("/", authenticate, requireLandlord, propertyRules, validate, async (
   }
 });
 
-/**
- * PUT /api/properties/:id
- * Owner landlord or admin.
- */
 router.put("/:id", authenticate, requireLandlordOrAdmin, propertyRules, validate, async (req, res, next) => {
   try {
     const ref  = db.collection("properties").doc(req.params.id);
@@ -120,7 +103,7 @@ router.put("/:id", authenticate, requireLandlordOrAdmin, propertyRules, validate
       return res.status(403).json({ error: "You can only edit your own properties." });
     }
 
-    const allowed = ["title", "description", "price", "location", "availableFrom", "amenities", "images", "roomType", "isAvailable"];
+    const allowed = ["title", "description", "price", "location", "availableFrom", "amenities", "images", "roomType", "isAvailable", "lat", "lng"];
     const update  = {};
     allowed.forEach((k) => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
     update.updatedAt = new Date().toISOString();
@@ -132,10 +115,6 @@ router.put("/:id", authenticate, requireLandlordOrAdmin, propertyRules, validate
   }
 });
 
-/**
- * DELETE /api/properties/:id
- * Soft-delete: sets isActive = false.
- */
 router.delete("/:id", authenticate, requireLandlordOrAdmin, async (req, res, next) => {
   try {
     const ref  = db.collection("properties").doc(req.params.id);
