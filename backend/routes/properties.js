@@ -17,10 +17,9 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
 
     let query = db.collection("properties").where("isActive", "==", true);
 
-    if (minPrice) query = query.where("price", ">=", parseFloat(minPrice));
-    if (maxPrice) query = query.where("price", "<=", parseFloat(maxPrice));
     if (available === "true") query = query.where("isAvailable", "==", true);
 
+    // Always order by createdAt to use the existing working Firebase index
     query = query.orderBy("createdAt", "desc").limit(limit);
 
     // Cursor-based pagination
@@ -31,6 +30,18 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
 
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // --- Client-side (In-Memory) Filtering to avoid Firebase Index errors ---
+
+    // 1. Price filter
+    if (minPrice) {
+      const min = parseFloat(minPrice);
+      properties = properties.filter((p) => p.price >= min);
+    }
+    if (maxPrice) {
+      const max = parseFloat(maxPrice);
+      properties = properties.filter((p) => p.price <= max);
+    }
 
     // Client-side location filter (Firestore can't do substring search natively)
     if (location) {
@@ -44,6 +55,79 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
       pagination: {
         count:     properties.length,
         nextCursor: lastDoc ? lastDoc.id : null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * POST /api/properties/chatbot-search
+ * Smart search endpoint for the AI chatbot.
+ * Supports amenity filtering, price range, location, room type.
+ */
+router.post("/chatbot-search", async (req, res, next) => {
+  try {
+    const { location, minPrice, maxPrice, amenities, roomType, available } = req.body;
+    const limit = 50;
+
+    let query = db.collection("properties").where("isActive", "==", true);
+
+    if (available === "true") query = query.where("isAvailable", "==", true);
+
+    // Always order by createdAt to use the existing working Firebase index
+    query = query.orderBy("createdAt", "desc").limit(limit);
+
+    const snap = await query.get();
+    let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // --- Client-side (In-Memory) Filtering to avoid Firebase Index errors ---
+
+    // 1. Price filter
+    if (minPrice) {
+      const min = parseFloat(minPrice);
+      properties = properties.filter((p) => p.price >= min);
+    }
+    if (maxPrice) {
+      const max = parseFloat(maxPrice);
+      properties = properties.filter((p) => p.price <= max);
+    }
+
+    // 2. Location filter (Firestore limitation)
+    if (location) {
+      const loc = location.toLowerCase();
+      properties = properties.filter((p) => p.location?.toLowerCase().includes(loc));
+    }
+
+    // 3. Room type filter
+    if (roomType) {
+      properties = properties.filter((p) => p.roomType === roomType);
+    }
+
+    // Client-side amenities filter — property must have ALL requested amenities
+    if (amenities && Array.isArray(amenities) && amenities.length > 0) {
+      properties = properties.filter((p) => {
+        const propAmenities = (p.amenities || []).map((a) => a.toLowerCase());
+        return amenities.every((a) => propAmenities.includes(a.toLowerCase()));
+      });
+    }
+
+    // Also collect unique locations for suggestions
+    const allSnap = await db.collection("properties")
+      .where("isActive", "==", true)
+      .select("location")
+      .limit(200)
+      .get();
+    const locations = [...new Set(
+      allSnap.docs.map((d) => d.data().location).filter(Boolean)
+    )];
+
+    res.json({
+      data: properties,
+      meta: {
+        count: properties.length,
+        locations,
       },
     });
   } catch (err) {

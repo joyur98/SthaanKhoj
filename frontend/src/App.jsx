@@ -12,6 +12,7 @@ import Contact from "./pages/Contact"
 import Favorites from "./pages/Favorites"
 import PostRoom from "./pages/PostRoom"
 import RoomDetail from "./pages/RoomDetail"
+import AIChatbot from "./components/AIChatbot"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
@@ -134,6 +135,9 @@ function App() {
           }
         />
       </Routes>
+
+        {/* AI Chatbot — visible on all authenticated pages */}
+        {user && <AIChatbot darkMode={darkMode} />}
     </BrowserRouter>
   )
 }

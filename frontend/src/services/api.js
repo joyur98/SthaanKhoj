@@ -82,3 +82,10 @@
 
     export const googleSignIn = (body) =>
   authRequest("/auth/google-signin", { method: "POST", body: JSON.stringify(body) });
+
+    // ── Chatbot ───────────────────────────────────────────────────────────────────
+    export const chatbotSearch = (filters) =>
+    authRequest("/properties/chatbot-search", {
+        method: "POST",
+        body: JSON.stringify(filters),
+    });

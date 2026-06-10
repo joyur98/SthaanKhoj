@@ -116,3 +116,32 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ── Chatbot Animations ────────────────────────────────────────────────────── */
+@theme {
+  @keyframes chatbot-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes chatbot-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  --animate-chatbot-bounce: chatbot-bounce 0.6s ease-in-out infinite;
+  --animate-chatbot-fade-in: chatbot-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Chatbot custom scrollbar */
+.chatbot-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.chatbot-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chatbot-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+.chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
