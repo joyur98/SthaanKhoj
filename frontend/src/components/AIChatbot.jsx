@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { chatbotSearch } from "../services/api"
 import { parseMessage, generateResponse } from "../services/chatbotEngine"
 
@@ -28,6 +28,7 @@ function AIChatbot({ darkMode }) {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -182,6 +183,10 @@ function AIChatbot({ darkMode }) {
       </div>
     </div>
   )
+
+  if (location.pathname === "/" || location.pathname === "/login") {
+    return null;
+  }
 
   return (
     <>
