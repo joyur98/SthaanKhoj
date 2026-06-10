@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { getProperty } from "../services/api"
 import Navbar from "../components/Navbar"
 import ContactLandlordModal from "../components/ContactLandlordModal"
+import { ViewLocationMap } from "../components/RoomMap"
 
 function RoomDetail({ darkMode, toggleDarkMode }) {
   const { id } = useParams()
@@ -141,6 +142,14 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Map */}
+                  <ViewLocationMap
+                    lat={room.lat}
+                    lng={room.lng}
+                    title={room.title}
+                  />
+
                 </div>
 
                 {/* Right — Price + Actions */}
@@ -166,7 +175,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       <button className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5">
                         Request Booking
                       </button>
-                      <button 
+                      <button
                         onClick={() => setIsContactModalOpen(true)}
                         className="w-full py-3 rounded-2xl text-sm font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200"
                       >
@@ -182,10 +191,10 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
         </div>
       </section>
 
-      <ContactLandlordModal 
-        isOpen={isContactModalOpen} 
-        onClose={() => setIsContactModalOpen(false)} 
-        room={room} 
+      <ContactLandlordModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        room={room}
       />
     </div>
   )
