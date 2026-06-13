@@ -13,6 +13,8 @@ import Favorites from "./pages/Favorites"
 import PostRoom from "./pages/PostRoom"
 import RoomDetail from "./pages/RoomDetail"
 import AIChatbot from "./components/AIChatbot"
+import StudentProfile from "./pages/StudentProfile"
+import LandlordProfile from "./pages/LandlordProfile"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
@@ -134,6 +136,25 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/profile/student"
+          element={
+            <ProtectedRoute user={user}>
+              <StudentProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/profile/landlord"
+          element={
+          <ProtectedRoute user={user}>
+            <LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          </ProtectedRoute>
+          }
+        />
+        
       </Routes>
 
         {/* AI Chatbot — visible on all authenticated pages */}
