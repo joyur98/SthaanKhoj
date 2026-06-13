@@ -4,7 +4,7 @@
     const authRequest = async (endpoint, options = {}) => {
     const { getAuth } = await import("firebase/auth");
     const auth = getAuth();
-    const token = await auth.currentUser?.getIdToken();
+    const token = await auth.currentUser?.getIdToken(true);
 
     const res = await fetch(`${BASE_URL}${endpoint}`, {
         ...options,
@@ -88,4 +88,4 @@
     authRequest("/properties/chatbot-search", {
         method: "POST",
         body: JSON.stringify(filters),
-    });
+    });

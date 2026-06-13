@@ -13,12 +13,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
         try {
+          // ✅ Force token refresh FIRST so custom claims are up to date
+          await firebaseUser.getIdToken(true);
+          setUser(firebaseUser);
           const data = await verifyToken();
-          setRole(data.role);
+          setRole(data.role ?? null);
         } catch (err) {
           console.error("Failed to verify token:", err);
+          setUser(firebaseUser);
           setRole(null);
         }
       } else {
@@ -30,11 +33,17 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const login = async (email, password) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    // ✅ Force refresh on explicit login too
+    await result.user.getIdToken(true);
+    const data = await verifyToken();
+    setRole(data.role ?? null);
+    return result;
   };
 
   const logout = () => {
+    setRole(null);
     return signOut(auth);
   };
 
@@ -47,8 +56,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
