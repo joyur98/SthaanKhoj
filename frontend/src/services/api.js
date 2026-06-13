@@ -51,6 +51,8 @@
     authRequest("/students/me", { method: "PUT", body: JSON.stringify(body) });
 
     export const getSavedProperties = () => authRequest("/students/saved-properties");
+    
+    export const getSavedPropertyIds = () => authRequest("/students/saved-properties/ids");
 
     export const toggleSavedProperty = (propertyId) =>
     authRequest(`/students/saved-properties/${propertyId}`, { method: "POST" });

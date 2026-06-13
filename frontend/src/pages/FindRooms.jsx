@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getProperties, toggleSavedProperty } from "../services/api"
+import { getProperties, toggleSavedProperty, getSavedProperties } from "../services/api"
 import Navbar from "../components/Navbar"
 
 const ROOM_TYPE_LABELS = {
@@ -13,14 +13,30 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [saved, setSaved] = useState(new Set())
+  const [togglingId, setTogglingId] = useState(null)
   const [filters, setFilters] = useState({
     minPrice: "", maxPrice: "", location: "", available: "",
   })
   const [applied, setApplied] = useState({})
 
+  // Load rooms
   useEffect(() => {
     fetchRooms(applied)
   }, [applied])
+
+  // Load saved property IDs from Firestore on mount
+  useEffect(() => {
+    const loadSaved = async () => {
+      try {
+        const properties = await getSavedProperties()
+        const ids = new Set((properties || []).map((p) => p.id))
+        setSaved(ids)
+      } catch (err) {
+        console.error("Could not load saved properties:", err.message)
+      }
+    }
+    loadSaved()
+  }, [])
 
   const fetchRooms = async (params) => {
     setLoading(true)
@@ -48,16 +64,29 @@ function FindRooms({ darkMode, toggleDarkMode }) {
     setApplied({})
   }
 
-  const handleToggleSave = async (propertyId) => {
+  const handleToggleSave = async (room) => {
+    if (togglingId === room.id) return
+    setTogglingId(room.id)
+
+    // Optimistic update
+    setSaved((prev) => {
+      const next = new Set(prev)
+      next.has(room.id) ? next.delete(room.id) : next.add(room.id)
+      return next
+    })
+
     try {
-      await toggleSavedProperty(propertyId)
+      await toggleSavedProperty(room.id)
+    } catch (err) {
+      // Revert on failure
       setSaved((prev) => {
         const next = new Set(prev)
-        next.has(propertyId) ? next.delete(propertyId) : next.add(propertyId)
+        next.has(room.id) ? next.delete(room.id) : next.add(room.id)
         return next
       })
-    } catch (err) {
       console.error("Could not save:", err.message)
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -89,6 +118,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
             </p>
           </div>
 
+          {/* Filters */}
           <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] p-5 md:p-6 mb-8">
             <div className="flex flex-wrap gap-4 items-end">
               <div className="space-y-1.5">
@@ -176,93 +206,102 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 {rooms.length} listing{rooms.length !== 1 ? "s" : ""} found
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {rooms.map((room) => (
-                  <div
-                    key={room.id}
-                    className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.06)] dark:hover:shadow-[0_20px_50px_rgba(16,185,129,0.04)] hover:-translate-y-1.5 transition-all duration-500 overflow-hidden"
-                  >
-                    <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                {rooms.map((room) => {
+                  const isSaved = saved.has(room.id)
+                  const isToggling = togglingId === room.id
+                  return (
+                    <div
+                      key={room.id}
+                      className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.06)] dark:hover:shadow-[0_20px_50px_rgba(16,185,129,0.04)] hover:-translate-y-1.5 transition-all duration-500 overflow-hidden"
+                    >
+                      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    <div className="relative h-48 bg-gray-100 dark:bg-white/5 overflow-hidden">
-                      {room.images?.[0] ? (
-                        <img
-                          src={room.images[0]} alt={room.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200 dark:text-white/10">
-                          🏠
-                        </div>
-                      )}
-                      <span className="absolute top-3 left-3 bg-white/90 dark:bg-dark-900/90 px-3 py-1 rounded-full text-xs font-extrabold text-black dark:text-white border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm">
-                        {ROOM_TYPE_LABELS[room.roomType] || room.roomType}
-                      </span>
-                      <button
-                        onClick={() => handleToggleSave(room.id)}
-                        className="absolute top-3 right-3 p-2 bg-white/90 dark:bg-dark-900/90 rounded-full border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                          strokeWidth={2} stroke="currentColor"
-                          className={`w-4 h-4 transition-colors duration-200 ${
-                            saved.has(room.id)
-                              ? "fill-rose-500 stroke-rose-500"
-                              : "fill-none stroke-gray-500 dark:stroke-gray-300"
+                      <div className="relative h-48 bg-gray-100 dark:bg-white/5 overflow-hidden">
+                        {room.images?.[0] ? (
+                          <img
+                            src={room.images[0]} alt={room.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200 dark:text-white/10">
+                            🏠
+                          </div>
+                        )}
+                        <span className="absolute top-3 left-3 bg-white/90 dark:bg-dark-900/90 px-3 py-1 rounded-full text-xs font-extrabold text-black dark:text-white border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm">
+                          {ROOM_TYPE_LABELS[room.roomType] || room.roomType}
+                        </span>
+
+                        {/* Heart button — wired to Firestore */}
+                        <button
+                          onClick={() => handleToggleSave(room)}
+                          disabled={isToggling}
+                          className={`absolute top-3 right-3 p-2 bg-white/90 dark:bg-dark-900/90 rounded-full border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-60 ${
+                            isSaved ? "ring-2 ring-rose-400/40" : ""
                           }`}
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="p-5 space-y-3">
-                      <div>
-                        <h2 className="font-bold text-gray-900 dark:text-white text-sm leading-snug line-clamp-2">
-                          {room.title}
-                        </h2>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 shrink-0">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            strokeWidth={2} stroke="currentColor"
+                            className={`w-4 h-4 transition-all duration-200 ${
+                              isSaved
+                                ? "fill-rose-500 stroke-rose-500 scale-110"
+                                : "fill-none stroke-gray-500 dark:stroke-gray-300"
+                            }`}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                           </svg>
-                          {room.location}
-                        </p>
+                        </button>
                       </div>
-                      <p className="text-primary-600 dark:text-primary-400 font-extrabold text-lg leading-none">
-                        NPR {room.price?.toLocaleString()}
-                        <span className="text-gray-400 dark:text-gray-500 font-normal text-xs"> /month</span>
-                      </p>
-                      {room.amenities?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {room.amenities.slice(0, 3).map((a) => (
-                            <span key={a} className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-semibold px-2.5 py-1 rounded-full">
-                              {a}
-                            </span>
-                          ))}
-                          {room.amenities.length > 3 && (
-                            <span className="text-gray-400 dark:text-gray-500 text-[10px] font-semibold px-1 py-1">
-                              +{room.amenities.length - 3} more
-                            </span>
-                          )}
+
+                      <div className="p-5 space-y-3">
+                        <div>
+                          <h2 className="font-bold text-gray-900 dark:text-white text-sm leading-snug line-clamp-2">
+                            {room.title}
+                          </h2>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 shrink-0">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            {room.location}
+                          </p>
                         </div>
-                      )}
-                      {room.availableFrom && (
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
-                          Available from{" "}
-                          {new Date(room.availableFrom).toLocaleDateString("en-NP", {
-                            day: "numeric", month: "short", year: "numeric",
-                          })}
+                        <p className="text-primary-600 dark:text-primary-400 font-extrabold text-lg leading-none">
+                          NPR {room.price?.toLocaleString()}
+                          <span className="text-gray-400 dark:text-gray-500 font-normal text-xs"> /month</span>
                         </p>
-                      )}
-                      <button
-                        onClick={() => navigate(`/rooms/${room.id}`)}
-                        className="w-full mt-1 py-2.5 rounded-xl text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 active:scale-98"
-                      >
-                        View Details
-                      </button>
+                        {room.amenities?.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {room.amenities.slice(0, 3).map((a) => (
+                              <span key={a} className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-semibold px-2.5 py-1 rounded-full">
+                                {a}
+                              </span>
+                            ))}
+                            {room.amenities.length > 3 && (
+                              <span className="text-gray-400 dark:text-gray-500 text-[10px] font-semibold px-1 py-1">
+                                +{room.amenities.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {room.availableFrom && (
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
+                            Available from{" "}
+                            {new Date(room.availableFrom).toLocaleDateString("en-NP", {
+                              day: "numeric", month: "short", year: "numeric",
+                            })}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => navigate(`/rooms/${room.id}`)}
+                          className="w-full mt-1 py-2.5 rounded-xl text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 active:scale-98"
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}

@@ -1,59 +1,49 @@
 import Navbar from "../components/Navbar"
 import { useState, useEffect } from "react"
-
-const STORAGE_KEY = "sthaankhoj_favorites"
-const ROOMS_KEY = "sthaankhoj_favorites_rooms"
-
-const loadFavRooms = () => {
-  try {
-    return JSON.parse(localStorage.getItem(ROOMS_KEY) || "[]")
-  } catch {
-    return []
-  }
-}
-
-const loadFavIds = () => {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"))
-  } catch {
-    return new Set()
-  }
-}
-
-const saveFavIds = (set) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
-}
+import { useNavigate } from "react-router-dom"
+import { getSavedProperties, toggleSavedProperty } from "../services/api"
 
 function Favorites({ darkMode, toggleDarkMode }) {
+  const navigate = useNavigate()
   const [favorites, setFavorites] = useState([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [locationFilter, setLocationFilter] = useState("All Locations")
   const [removingId, setRemovingId] = useState(null)
 
+  // Load saved properties from Firestore on mount
   useEffect(() => {
-    setFavorites(loadFavRooms())
+    const loadFavorites = async () => {
+      try {
+        const properties = await getSavedProperties()
+        setFavorites(properties || [])
+      } catch (err) {
+        console.error("Could not load favorites:", err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadFavorites()
   }, [])
 
-  const handleRemoveFavorite = (roomId) => {
+  const handleRemoveFavorite = async (roomId) => {
     setRemovingId(roomId)
-
-    setTimeout(() => {
-      // Remove from localStorage
-      const updatedRooms = favorites.filter(r => r.id !== roomId)
-      localStorage.setItem(ROOMS_KEY, JSON.stringify(updatedRooms))
-
-      const ids = loadFavIds()
-      ids.delete(roomId)
-      saveFavIds(ids)
-
-      setFavorites(updatedRooms)
+    try {
+      await toggleSavedProperty(roomId) // toggles off in Firestore
+      setTimeout(() => {
+        setFavorites((prev) => prev.filter((r) => r.id !== roomId))
+        setRemovingId(null)
+      }, 350)
+    } catch (err) {
+      console.error("Could not remove favorite:", err.message)
       setRemovingId(null)
-    }, 350)
+    }
   }
 
-  const filteredFavorites = favorites.filter(room => {
-    const matchesSearch = room.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLocation = locationFilter === "All Locations" || room.location === locationFilter
+  const filteredFavorites = favorites.filter((room) => {
+    const matchesSearch = room.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesLocation =
+      locationFilter === "All Locations" || room.location === locationFilter
     return matchesSearch && matchesLocation
   })
 
@@ -82,7 +72,7 @@ function Favorites({ darkMode, toggleDarkMode }) {
             Rooms you've saved for later. Compare and shortlist your top picks near Kathmandu University.
           </p>
 
-          {favorites.length > 0 && (
+          {!loading && favorites.length > 0 && (
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-white/5 rounded-full border border-gray-100 dark:border-white/10 backdrop-blur-md shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-rose-500">
                 <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
@@ -94,8 +84,24 @@ function Favorites({ darkMode, toggleDarkMode }) {
           )}
         </div>
 
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-[24px] overflow-hidden border border-white/60 dark:border-white/10 animate-pulse">
+                <div className="h-56 bg-gray-100 dark:bg-white/5" />
+                <div className="p-5 space-y-3">
+                  <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-full w-3/4" />
+                  <div className="h-3 bg-gray-100 dark:bg-white/5 rounded-full w-1/2" />
+                  <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-full w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Filters — only show when there are favorites */}
-        {favorites.length > 0 && (
+        {!loading && favorites.length > 0 && (
           <div className="glass-card dark:glass-card-dark rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-white/60 dark:border-white/10 mb-12 max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
             <div className="flex-1 space-y-1.5">
               <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1">
@@ -129,7 +135,7 @@ function Favorites({ darkMode, toggleDarkMode }) {
         )}
 
         {/* Empty state — no favorites */}
-        {favorites.length === 0 && (
+        {!loading && favorites.length === 0 && (
           <div className="text-center py-24 space-y-5">
             <div className="relative inline-flex items-center justify-center w-24 h-24 mx-auto">
               <div className="absolute inset-0 bg-rose-100 dark:bg-rose-500/10 rounded-full"></div>
@@ -141,18 +147,18 @@ function Favorites({ darkMode, toggleDarkMode }) {
             <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
               Browse available rooms and tap the heart icon to save your favorites here.
             </p>
-            <a
-              href="/find-rooms"
+            <button
+              onClick={() => navigate("/find-rooms")}
               className="inline-flex items-center gap-2 mt-2 px-6 py-3 rounded-2xl text-sm font-bold bg-gradient-to-r from-primary-500 to-teal-400 text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
             >
               <span>Explore Rooms</span>
               <span>→</span>
-            </a>
+            </button>
           </div>
         )}
 
         {/* Empty state — filters return nothing */}
-        {favorites.length > 0 && filteredFavorites.length === 0 && (
+        {!loading && favorites.length > 0 && filteredFavorites.length === 0 && (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No matches found</h3>
@@ -161,9 +167,9 @@ function Favorites({ darkMode, toggleDarkMode }) {
         )}
 
         {/* Favorites Grid */}
-        {filteredFavorites.length > 0 && (
+        {!loading && filteredFavorites.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredFavorites.map(room => (
+            {filteredFavorites.map((room) => (
               <div
                 key={room.id}
                 className="group relative glass-card dark:glass-card-dark rounded-[24px] overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] border border-white/60 dark:border-white/10 hover:-translate-y-1"
@@ -176,12 +182,18 @@ function Favorites({ darkMode, toggleDarkMode }) {
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden">
                   <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse"></div>
-                  <img
-                    src={room.image}
-                    alt={room.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                  {room.images?.[0] ? (
+                    <img
+                      src={room.images[0]}
+                      alt={room.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-5xl text-gray-300 dark:text-white/10">
+                      🏠
+                    </div>
+                  )}
 
                   {/* Remove heart button */}
                   <button
@@ -196,13 +208,17 @@ function Favorites({ darkMode, toggleDarkMode }) {
                   </button>
 
                   <div className="absolute top-4 right-4 bg-white/90 dark:bg-dark-900/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1 border border-white/20 dark:border-white/5">
-                    <span className="text-amber-500">★</span> {room.rating}
+                    <span className="text-amber-400">★</span>
+                    <span>{room.rating ?? "New"}</span>
                   </div>
-                  <div className="absolute bottom-4 left-4">
-                    <span className="bg-primary-500/90 dark:bg-primary-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-primary-400/30">
-                      {room.type}
-                    </span>
-                  </div>
+
+                  {room.roomType && (
+                    <div className="absolute bottom-4 left-4">
+                      <span className="bg-primary-500/90 dark:bg-primary-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-primary-400/30 capitalize">
+                        {room.roomType}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
@@ -216,20 +232,33 @@ function Favorites({ darkMode, toggleDarkMode }) {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {room.badges?.map((badge, idx) => (
-                      <span key={idx} className="text-[10px] font-semibold tracking-wide text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-md border border-gray-200/50 dark:border-white/5">
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
+                  {room.amenities?.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {room.amenities.slice(0, 3).map((badge, idx) => (
+                        <span key={idx} className="text-[10px] font-semibold tracking-wide text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-md border border-gray-200/50 dark:border-white/5">
+                          {badge}
+                        </span>
+                      ))}
+                      {room.amenities.length > 3 && (
+                        <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 px-1 py-1">
+                          +{room.amenities.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <div className="pt-4 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
                     <div>
                       <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Rent</p>
-                      <p className="font-extrabold text-lg text-primary-600 dark:text-primary-400">{room.price}</p>
+                      <p className="font-extrabold text-lg text-primary-600 dark:text-primary-400">
+                        NPR {room.price?.toLocaleString()}
+                        <span className="text-gray-400 font-normal text-xs"> /month</span>
+                      </p>
                     </div>
-                    <button className="px-5 py-2 rounded-xl text-sm font-bold text-gray-700 dark:text-white bg-gray-100 hover:bg-primary-50 dark:bg-white/5 dark:hover:bg-primary-500/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 shadow-sm border border-transparent hover:border-primary-200 dark:hover:border-primary-500/30 active:scale-95 cursor-pointer">
+                    <button
+                      onClick={() => navigate(`/rooms/${room.id}`)}
+                      className="px-5 py-2 rounded-xl text-sm font-bold text-gray-700 dark:text-white bg-gray-100 hover:bg-primary-50 dark:bg-white/5 dark:hover:bg-primary-500/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 shadow-sm border border-transparent hover:border-primary-200 dark:hover:border-primary-500/30 active:scale-95 cursor-pointer"
+                    >
                       Details
                     </button>
                   </div>
