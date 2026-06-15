@@ -48,3 +48,4 @@ export const requireLandlord = requireRole("landlord");
 export const requireAdmin    = requireRole("admin");
 export const requireLandlordOrAdmin = requireRole("landlord", "admin");
 export const requireAnyRole  = requireRole("student", "landlord", "admin");
+//auth.js

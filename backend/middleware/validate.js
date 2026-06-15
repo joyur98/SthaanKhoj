@@ -35,4 +35,4 @@ export const bookingRules = [
 export const paginationRules = [
   query("limit").optional().isInt({ min: 1, max: 50 }),
   query("page").optional().isInt({ min: 1 }),
-];
+];//validate.js

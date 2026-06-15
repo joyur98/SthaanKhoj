@@ -125,3 +125,4 @@ router.patch("/:id/verify", requireAdmin, async (req, res, next) => {
 });
 
 export default router;
+//landlords.js

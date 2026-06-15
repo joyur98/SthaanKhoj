@@ -12,6 +12,8 @@ import Contact from "./pages/Contact"
 import Favorites from "./pages/Favorites"
 import PostRoom from "./pages/PostRoom"
 import RoomDetail from "./pages/RoomDetail"
+import Messages from "./pages/Messages"
+import Chat from "./pages/Chat"
 import AIChatbot from "./components/AIChatbot"
 import StudentProfile from "./pages/StudentProfile"
 import LandlordProfile from "./pages/LandlordProfile"
@@ -35,11 +37,13 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
     })
+
     return () => unsubscribe()
   }, [])
 
   useEffect(() => {
     const root = document.documentElement
+
     if (darkMode) {
       root.classList.add("dark")
     } else {
@@ -49,12 +53,15 @@ function App() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+
     const handleChange = (e) => {
       if (!localStorage.getItem("theme")) {
         setDarkMode(e.matches)
       }
     }
+
     mediaQuery.addEventListener("change", handleChange)
+
     return () => mediaQuery.removeEventListener("change", handleChange)
   }, [])
 
@@ -69,17 +76,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
         <Route
           path="/"
           element={<Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
         />
+
         <Route
           path="/login"
           element={<Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
         />
 
-        {/* Protected routes */}
         <Route
           path="/home"
           element={
@@ -88,6 +94,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/find-rooms"
           element={
@@ -96,6 +103,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/rooms/:id"
           element={
@@ -104,6 +112,25 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute user={user}>
+              <Messages darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat/:chatId"
+          element={
+            <ProtectedRoute user={user}>
+              <Chat darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/about"
           element={
@@ -112,6 +139,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/contact"
           element={
@@ -120,6 +148,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/favorites"
           element={
@@ -128,6 +157,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/post-room"
           element={
@@ -157,8 +187,7 @@ function App() {
         
       </Routes>
 
-        {/* AI Chatbot — visible on all authenticated pages */}
-        {user && <AIChatbot darkMode={darkMode} />}
+      {user && <AIChatbot darkMode={darkMode} />}
     </BrowserRouter>
   )
 }

@@ -73,3 +73,4 @@ export const updatePaymentStatus = async (bookingId, paymentId) => {
     console.error("Error updating payment:", error);
   }
 };
+//bookingService.js

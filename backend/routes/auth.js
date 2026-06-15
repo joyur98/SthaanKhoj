@@ -171,3 +171,4 @@ router.delete("/delete-account", authenticate, async (req, res, next) => {
 });
 
 export default router;
+//auth.js

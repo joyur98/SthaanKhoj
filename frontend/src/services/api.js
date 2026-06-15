@@ -1,93 +1,92 @@
-    const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-    // Gets the Firebase token from the current user and makes an authenticated request
-    const authRequest = async (endpoint, options = {}) => {
-    const { getAuth } = await import("firebase/auth");
-    const auth = getAuth();
-    const token = await auth.currentUser?.getIdToken(true);
+const authRequest = async (endpoint, options = {}) => {
+  const { getAuth } = await import("firebase/auth");
+  const auth = getAuth();
+  const token = await auth.currentUser?.getIdToken(true);
 
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
-        },
-    });
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Something went wrong");
-    return data;
-    };
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Something went wrong");
+  return data;
+};
 
-    // ── Auth ──────────────────────────────────────────────────────────────────────
-    export const registerUser = (body) =>
-    authRequest("/auth/register", { method: "POST", body: JSON.stringify(body) });
+// ── Auth ──────────────────────────────────────────────────────────────────────
+export const registerUser = (body) =>
+  authRequest("/auth/register", { method: "POST", body: JSON.stringify(body) });
 
-    export const verifyToken = () =>
-    authRequest("/auth/verify-token", { method: "POST" });
+export const verifyToken = () =>
+  authRequest("/auth/verify-token", { method: "POST" });
 
-    // ── Properties ────────────────────────────────────────────────────────────────
-    export const getProperties = (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return authRequest(`/properties?${query}`);
-    };
+// ── Properties ────────────────────────────────────────────────────────────────
+export const getProperties = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return authRequest(`/properties?${query}`);
+};
 
-    export const getProperty = (id) => authRequest(`/properties/${id}`);
+export const getProperty = (id) => authRequest(`/properties/${id}`);
 
-    export const createProperty = (body) =>
-    authRequest("/properties", { method: "POST", body: JSON.stringify(body) });
+export const createProperty = (body) =>
+  authRequest("/properties", { method: "POST", body: JSON.stringify(body) });
 
-    export const updateProperty = (id, body) =>
-    authRequest(`/properties/${id}`, { method: "PUT", body: JSON.stringify(body) });
+export const updateProperty = (id, body) =>
+  authRequest(`/properties/${id}`, { method: "PUT", body: JSON.stringify(body) });
 
-    export const deleteProperty = (id) =>
-    authRequest(`/properties/${id}`, { method: "DELETE" });
+export const deleteProperty = (id) =>
+  authRequest(`/properties/${id}`, { method: "DELETE" });
 
-    // ── Students ──────────────────────────────────────────────────────────────────
-    export const getMyStudentProfile = () => authRequest("/students/me");
+// ── Students ──────────────────────────────────────────────────────────────────
+export const getMyStudentProfile = () => authRequest("/students/me");
 
-    export const updateStudentProfile = (body) =>
-    authRequest("/students/me", { method: "PUT", body: JSON.stringify(body) });
+export const updateStudentProfile = (body) =>
+  authRequest("/students/me", { method: "PUT", body: JSON.stringify(body) });
 
-    export const getSavedProperties = () => authRequest("/students/saved-properties");
-    
-    export const getSavedPropertyIds = () => authRequest("/students/saved-properties/ids");
+export const getSavedProperties = () => authRequest("/students/saved-properties");
 
-    export const toggleSavedProperty = (propertyId) =>
-    authRequest(`/students/saved-properties/${propertyId}`, { method: "POST" });
+export const getSavedPropertyIds = () => authRequest("/students/saved-properties/ids");
 
-    // ── Landlords ─────────────────────────────────────────────────────────────────
-    export const getMyLandlordProfile = () => authRequest("/landlords/me");
+export const toggleSavedProperty = (propertyId) =>
+  authRequest(`/students/saved-properties/${propertyId}`, { method: "POST" });
 
-    export const updateLandlordProfile = (body) =>
-    authRequest("/landlords/me", { method: "PUT", body: JSON.stringify(body) });
+// ── Landlords ─────────────────────────────────────────────────────────────────
+export const getMyLandlordProfile = () => authRequest("/landlords/me");
 
-    export const getMyProperties = () => authRequest("/landlords/me/properties");
+export const updateLandlordProfile = (body) =>
+  authRequest("/landlords/me", { method: "PUT", body: JSON.stringify(body) });
 
-    export const getMyBookingRequests = () => authRequest("/landlords/me/bookings");
+export const getMyProperties = () => authRequest("/landlords/me/properties");
 
-    export const respondToBooking = (bookingId, status) =>
-    authRequest(`/landlords/me/bookings/${bookingId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }), // "accepted" or "rejected"
-    });
+export const getMyBookingRequests = () => authRequest("/landlords/me/bookings");
 
-    // ── Bookings ──────────────────────────────────────────────────────────────────
-    export const createBooking = (body) =>
-    authRequest("/bookings", { method: "POST", body: JSON.stringify(body) });
+export const respondToBooking = (bookingId, status) =>
+  authRequest(`/landlords/me/bookings/${bookingId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
 
-    export const getMyBookings = () => authRequest("/bookings/my");
+// ── Bookings ──────────────────────────────────────────────────────────────────
+export const createBooking = (body) =>
+  authRequest("/bookings", { method: "POST", body: JSON.stringify(body) });
 
-    export const cancelBooking = (bookingId) =>
-    authRequest(`/bookings/${bookingId}/cancel`, { method: "PATCH" });
+export const getMyBookings = () => authRequest("/bookings/my");
 
-    export const googleSignIn = (body) =>
+export const cancelBooking = (bookingId) =>
+  authRequest(`/bookings/${bookingId}/cancel`, { method: "PATCH" });
+
+export const googleSignIn = (body) =>
   authRequest("/auth/google-signin", { method: "POST", body: JSON.stringify(body) });
 
-    // ── Chatbot ───────────────────────────────────────────────────────────────────
-    export const chatbotSearch = (filters) =>
-    authRequest("/properties/chatbot-search", {
-        method: "POST",
-        body: JSON.stringify(filters),
-    });
+// ── Chatbot ───────────────────────────────────────────────────────────────────
+export const chatbotSearch = (filters) =>
+  authRequest("/properties/chatbot-search", {
+    method: "POST",
+    body: JSON.stringify(filters),
+  });

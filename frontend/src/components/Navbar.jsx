@@ -1,33 +1,42 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import logo2 from "../assets/logo2.png"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { listenToUnreadCount } from "../services/chatService"
 
 function Navbar({ darkMode, toggleDarkMode }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
   const location = useLocation()
   const navigate = useNavigate()
   const { user, role, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
-      }
+      setScrolled(window.scrollY > 20)
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (!user || !role) {
+      setUnreadCount(0)
+      return
+    }
+    const unsubscribe = listenToUnreadCount(user.uid, role, setUnreadCount)
+    return () => unsubscribe()
+  }, [user, role])
+
   const navLinks = [
     { name: "Home", path: "/home" },
     { name: "Find Rooms", path: "/find-rooms" },
+    { name: "Messages", path: "/messages", badge: unreadCount },
     { name: "Favorites", path: "/favorites" },
     { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" }
+    { name: "Contact", path: "/contact" },
   ]
 
   const isActive = (path) => location.pathname === path
@@ -50,7 +59,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
-        {/* Left: Brand Logo */}
         <Link to="/home" className="flex items-center gap-3 group">
           <div className="relative p-1 bg-white dark:bg-dark-900 rounded-full shadow-[0_4px_16px_rgba(16,185,129,0.12)] border border-green-50 dark:border-white/5 overflow-hidden transition-all duration-500 group-hover:rotate-12 group-hover:scale-105">
             <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -62,7 +70,9 @@ function Navbar({ darkMode, toggleDarkMode }) {
           </div>
           <div className="flex flex-col text-left">
             <h1 className="text-2xl font-bold tracking-tight leading-none flex items-center">
-              <span className="text-dark-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">Sthaan</span>
+              <span className="text-dark-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                Sthaan
+              </span>
               <span className="text-primary-600">Khoj</span>
             </h1>
             <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold tracking-wider uppercase mt-0.5">
@@ -71,7 +81,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
           </div>
         </Link>
 
-        {/* Center: Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8 font-medium">
           {navLinks.map((link) => (
             <Link
@@ -83,7 +92,14 @@ function Navbar({ darkMode, toggleDarkMode }) {
                   : "text-gray-600 dark:text-gray-300 hover:text-dark-900 dark:hover:text-white"
               }`}
             >
-              {link.name}
+              <span className="relative">
+                {link.name}
+                {link.badge > 0 && (
+                  <span className="absolute -top-3 -right-4 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    {link.badge > 99 ? "99+" : link.badge}
+                  </span>
+                )}
+              </span>
               <span
                 className={`absolute bottom-0 left-0 h-[2.5px] bg-gradient-to-r from-primary-500 to-teal-500 transition-all duration-300 ${
                   isActive(link.path) ? "w-full" : "w-0 group-hover:w-full"
@@ -93,9 +109,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           ))}
         </div>
 
-        {/* Right: Actions */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Theme Switcher */}
           <button
             onClick={toggleDarkMode}
             className="p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 dark:border-white/10 dark:hover:border-white/20 bg-gray-50/50 hover:bg-gray-50 dark:bg-white/5 dark:hover:bg-white/10 text-gray-500 hover:text-dark-950 dark:text-gray-400 dark:hover:text-white transition-all duration-300 active:scale-95 shadow-[0_2px_8px_rgba(0,0,0,0.02)] focus:outline-none cursor-pointer"
@@ -112,7 +126,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
             )}
           </button>
 
-          
           <Link
             to={role === "landlord" ? "/profile/landlord" : "/profile/student"}
             className="p-2.5 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-dark-950 dark:hover:text-white transition-all duration-300"
@@ -121,8 +134,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
           </Link>
-          
-          {/* Post a Room - Only visible to landlords */}
+
           {role === "landlord" && (
             <Link
               to="/post-room"
@@ -132,9 +144,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </Link>
           )}
 
-          
-
-          {/* Log Out Button */}
           {user && (
             <button
               onClick={handleLogout}
@@ -148,7 +157,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
           )}
         </div>
 
-        {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-dark-900 dark:hover:text-white transition-all focus:outline-none"
@@ -162,7 +170,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
         </button>
       </div>
 
-      {/* Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden transition-all duration-300"
@@ -170,7 +177,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
         ></div>
       )}
 
-      {/* Mobile Navigation Drawer */}
       <div
         className={`fixed top-0 right-0 z-50 h-full w-[280px] bg-white dark:bg-dark-900 shadow-2xl border-l border-gray-100/50 dark:border-white/5 p-6 flex flex-col justify-between transform transition-transform duration-500 ease-out md:hidden ${
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
@@ -188,9 +194,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               onClick={() => setMobileMenuOpen(false)}
               className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-dark-900 dark:hover:text-white transition-all"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              ✕
             </button>
           </div>
 
@@ -200,13 +204,18 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 key={link.name}
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`py-2 px-3 rounded-xl text-sm font-semibold tracking-wide transition-all text-left ${
+                className={`relative py-2 px-3 rounded-xl text-sm font-semibold tracking-wide transition-all text-left ${
                   isActive(link.path)
                     ? "bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-dark-900 dark:hover:text-white"
                 }`}
               >
                 {link.name}
+                {link.badge > 0 && (
+                  <span className="ml-2 inline-flex min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center">
+                    {link.badge > 99 ? "99+" : link.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -222,8 +231,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               {darkMode ? "☀️" : "🌙"}
             </button>
           </div>
-          
-          {/* Post a Room - Only visible to landlords in mobile menu */}
+
           {role === "landlord" && (
             <Link
               to="/post-room"
@@ -233,16 +241,15 @@ function Navbar({ darkMode, toggleDarkMode }) {
               Post a Room
             </Link>
           )}
-          
-          {/* Mobile Log Out */}
+
           {user && (
             <button
-              onClick={() => { setMobileMenuOpen(false); handleLogout() }}
+              onClick={() => {
+                setMobileMenuOpen(false)
+                handleLogout()
+              }}
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 cursor-pointer"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-              </svg>
               Log Out
             </button>
           )}

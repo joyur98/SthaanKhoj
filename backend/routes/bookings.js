@@ -123,3 +123,4 @@ router.get("/", requireAdmin, async (req, res, next) => {
 });
 
 export default router;
+//bookings.js

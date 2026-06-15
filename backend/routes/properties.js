@@ -218,3 +218,4 @@ router.delete("/:id", authenticate, requireLandlordOrAdmin, async (req, res, nex
 });
 
 export default router;
+//properties.js

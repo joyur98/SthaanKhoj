@@ -60,3 +60,4 @@ export const isFavorited = async (roomId) => {
     return false;
   }
 };
+//FavoriteService.js

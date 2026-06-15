@@ -54,13 +54,10 @@ function AIChatbot({ darkMode }) {
     if (!msg) return
     setInput("")
 
-    // Add user message
     addMessage({ role: "user", text: msg })
 
-    // Parse the message
     const { intent, filters } = parseMessage(msg)
 
-    // If it's a search, query the API
     if (intent === "search") {
       setIsTyping(true)
       try {
@@ -75,7 +72,6 @@ function AIChatbot({ darkMode }) {
         const res = await chatbotSearch(apiFilters)
         const results = res.data || []
 
-        // Simulate slight delay for natural feel
         await new Promise((r) => setTimeout(r, 600))
         setIsTyping(false)
 
@@ -90,7 +86,6 @@ function AIChatbot({ darkMode }) {
         })
       }
     } else {
-      // Non-search intents — respond immediately with slight delay
       setIsTyping(true)
       await new Promise((r) => setTimeout(r, 400))
       setIsTyping(false)
@@ -108,7 +103,6 @@ function AIChatbot({ darkMode }) {
     }
   }
 
-  // Render markdown-bold (**text**) as <strong>
   const renderText = (text) => {
     if (!text) return null
     const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
@@ -119,7 +113,6 @@ function AIChatbot({ darkMode }) {
       if (part.startsWith("*") && part.endsWith("*")) {
         return <em key={i} className="italic opacity-80">{part.slice(1, -1)}</em>
       }
-      // Handle newlines
       return part.split("\n").map((line, j) => (
         <span key={`${i}-${j}`}>
           {j > 0 && <br />}
@@ -129,7 +122,6 @@ function AIChatbot({ darkMode }) {
     })
   }
 
-  // Room card component
   const RoomCard = ({ room }) => (
     <div
       className="flex gap-3 p-3 bg-white/60 dark:bg-white/5 border border-gray-100/80 dark:border-white/10 rounded-2xl hover:shadow-md dark:hover:shadow-lg transition-all duration-300 cursor-pointer group"
@@ -138,7 +130,6 @@ function AIChatbot({ darkMode }) {
         setIsOpen(false)
       }}
     >
-      {/* Thumbnail */}
       <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5">
         {room.images?.[0] ? (
           <img src={room.images[0]} alt={room.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
@@ -146,7 +137,6 @@ function AIChatbot({ darkMode }) {
           <div className="w-full h-full flex items-center justify-center text-2xl text-gray-300 dark:text-white/10">🏠</div>
         )}
       </div>
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">
           {room.title}
@@ -188,13 +178,18 @@ function AIChatbot({ darkMode }) {
     return null;
   }
 
+  // Hide chatbot on chat pages to avoid overlapping the send button
+  if (location.pathname.startsWith("/chat/")) {
+    return null;
+  }
+
   return (
     <>
       {/* ── Floating Button ────────────────────────────────────────── */}
       <button
         id="chatbot-toggle"
         onClick={() => setIsOpen((o) => !o)}
-        className={`fixed bottom-6 right-6 z-[9998] p-4 rounded-2xl shadow-[0_8px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.4)] transition-all duration-500 hover:scale-105 active:scale-95 ${
+        className={`fixed bottom-6 left-6 z-[9998] p-4 rounded-2xl shadow-[0_8px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.4)] transition-all duration-500 hover:scale-105 active:scale-95 ${
           isOpen
             ? "bg-gray-200 dark:bg-dark-900 rotate-0"
             : "bg-gradient-to-br from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600"
@@ -210,11 +205,9 @@ function AIChatbot({ darkMode }) {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
             </svg>
-            {/* Unread indicator */}
             {hasUnread && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-dark-950 animate-pulse" />
             )}
-            {/* Pulse ring */}
             <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-600 to-teal-500 animate-ping opacity-20 pointer-events-none" />
           </>
         )}
@@ -222,7 +215,7 @@ function AIChatbot({ darkMode }) {
 
       {/* ── Chat Window ────────────────────────────────────────────── */}
       <div
-        className={`fixed bottom-24 right-6 z-[9999] w-[380px] max-w-[calc(100vw-2rem)] transition-all duration-500 ease-out ${
+        className={`fixed bottom-24 left-6 z-[9999] w-[380px] max-w-[calc(100vw-2rem)] transition-all duration-500 ease-out ${
           isOpen
             ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
             : "opacity-0 translate-y-4 scale-95 pointer-events-none"
@@ -263,7 +256,6 @@ function AIChatbot({ darkMode }) {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-chatbot-fade-in`}
               >
                 <div className={`max-w-[85%] ${msg.role === "user" ? "order-1" : ""}`}>
-                  {/* Bot avatar */}
                   {msg.role === "bot" && (
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="w-5 h-5 rounded-md bg-gradient-to-br from-primary-500 to-teal-400 flex items-center justify-center text-[10px] shadow-sm">✨</span>
@@ -271,7 +263,6 @@ function AIChatbot({ darkMode }) {
                     </div>
                   )}
 
-                  {/* Message bubble */}
                   <div
                     className={`px-4 py-3 text-[13px] leading-relaxed ${
                       msg.role === "user"
@@ -282,7 +273,6 @@ function AIChatbot({ darkMode }) {
                     {renderText(msg.text)}
                   </div>
 
-                  {/* Room results */}
                   {msg.results && msg.results.length > 0 && (
                     <div className="mt-2 space-y-2 max-h-[280px] overflow-y-auto pr-1 chatbot-scrollbar">
                       {msg.results.slice(0, 5).map((room) => (
@@ -302,7 +292,6 @@ function AIChatbot({ darkMode }) {
                     </div>
                   )}
 
-                  {/* Suggestion chips */}
                   {msg.suggestions && msg.suggestions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2.5">
                       {msg.suggestions.map((s) => (
@@ -320,7 +309,6 @@ function AIChatbot({ darkMode }) {
               </div>
             ))}
 
-            {/* Typing indicator */}
             {isTyping && (
               <div className="flex justify-start animate-chatbot-fade-in">
                 <div>

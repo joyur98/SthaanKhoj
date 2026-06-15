@@ -2,17 +2,21 @@ import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { getProperty } from "../services/api"
 import Navbar from "../components/Navbar"
-import ContactLandlordModal from "../components/ContactLandlordModal"
 import { ViewLocationMap } from "../components/RoomMap"
+import { useAuth } from "../context/AuthContext"
+import { getOrCreateChat } from "../services/chatService"
 
 function RoomDetail({ darkMode, toggleDarkMode }) {
   const { id } = useParams()
   const navigate = useNavigate()
+
+  const { user } = useAuth()
+
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeImg, setActiveImg] = useState(0)
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
     getProperty(id)
@@ -20,6 +24,36 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  const handleContactLandlord = async () => {
+    if (!user || !room) return
+
+    console.log("user.uid:", user.uid)
+    console.log("room.landlordId:", room.landlordId)
+    console.log("room id:", id)
+
+    if (!room.landlordId) {
+      console.error("landlordId is missing from room data!", room)
+      return
+    }
+
+    try {
+      setChatLoading(true)
+
+      const chatId = await getOrCreateChat(
+        user.uid,
+        room.landlordId,
+        id,
+        room.title
+      )
+
+      navigate(`/chat/${chatId}`)
+    } catch (err) {
+      console.error("getOrCreateChat error:", err)
+    } finally {
+      setChatLoading(false)
+    }
+  }
 
   return (
     <div className={darkMode ? "dark" : ""}>
@@ -30,7 +64,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
 
         <div className="max-w-5xl mx-auto px-6 md:px-12">
 
-          {/* Back button */}
           <button
             onClick={() => navigate("/find-rooms")}
             className="flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors mb-8"
@@ -41,7 +74,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
             Back to Find Rooms
           </button>
 
-          {/* Loading */}
           {loading && (
             <div className="space-y-6 animate-pulse">
               <div className="h-72 bg-gray-100 dark:bg-white/5 rounded-[28px]" />
@@ -50,7 +82,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="px-5 py-4 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-2xl text-red-600 dark:text-red-400 text-sm font-semibold">
               ⚠ {error}
@@ -60,7 +91,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
           {room && (
             <div className="space-y-8">
 
-              {/* Images */}
               <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
                 {room.images?.length > 0 ? (
                   <>
@@ -69,6 +99,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       alt={room.title}
                       className="w-full h-72 md:h-96 object-cover"
                     />
+
                     {room.images.length > 1 && (
                       <div className="flex gap-2 p-4 overflow-x-auto">
                         {room.images.map((img, i) => (
@@ -94,29 +125,24 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                 )}
               </div>
 
-              {/* Main Info */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                {/* Left — Details */}
                 <div className="md:col-span-2 space-y-6">
 
-                  {/* Title + badges */}
                   <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
+
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                         {room.title}
                       </h1>
+
                       <span className="shrink-0 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400 text-xs font-bold rounded-full border border-primary-100/50 dark:border-primary-900/30 capitalize">
                         {room.roomType}
                       </span>
                     </div>
 
                     <p className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 shrink-0">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                      </svg>
-                      {room.location}
+                      📍 {room.location}
                     </p>
 
                     <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
@@ -124,12 +150,12 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     </p>
                   </div>
 
-                  {/* Amenities */}
                   {room.amenities?.length > 0 && (
                     <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
                       <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">
                         Amenities
                       </h2>
+
                       <div className="flex flex-wrap gap-2">
                         {room.amenities.map((a) => (
                           <span
@@ -143,7 +169,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     </div>
                   )}
 
-                  {/* Map */}
                   <ViewLocationMap
                     lat={room.lat}
                     lng={room.lng}
@@ -152,35 +177,31 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
 
                 </div>
 
-                {/* Right — Price + Actions */}
                 <div className="space-y-4">
                   <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
+
                     <p className="text-3xl font-extrabold text-primary-600 dark:text-primary-400">
                       NPR {room.price?.toLocaleString()}
                     </p>
+
                     <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-1">
                       per month
                     </p>
 
-                    {room.availableFrom && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 font-semibold">
-                        Available from{" "}
-                        {new Date(room.availableFrom).toLocaleDateString("en-NP", {
-                          day: "numeric", month: "long", year: "numeric",
-                        })}
-                      </p>
-                    )}
-
                     <div className="mt-6 space-y-3">
-                      <button className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5">
+
+                      <button className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300">
                         Request Booking
                       </button>
+
                       <button
-                        onClick={() => setIsContactModalOpen(true)}
-                        className="w-full py-3 rounded-2xl text-sm font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200"
+                        onClick={handleContactLandlord}
+                        disabled={chatLoading}
+                        className="w-full py-3 rounded-2xl text-sm font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 disabled:opacity-50"
                       >
-                        Contact Landlord
+                        {chatLoading ? "Opening chat..." : "Contact Landlord"}
                       </button>
+
                     </div>
                   </div>
                 </div>
@@ -190,12 +211,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
           )}
         </div>
       </section>
-
-      <ContactLandlordModal
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-        room={room}
-      />
     </div>
   )
 }

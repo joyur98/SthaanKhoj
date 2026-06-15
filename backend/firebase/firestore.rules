@@ -50,9 +50,7 @@ service cloud.firestore {
 
     // ── Properties ─────────────────────────────────────────────────────────────
     match /properties/{propertyId} {
-      // Anyone signed in can read active listings
       allow read: if isSignedIn();
-      // Only the owning landlord or admin can write
       allow create: if isLandlord() || isAdmin();
       allow update, delete: if isAdmin() ||
         (isLandlord() && resource.data.landlordId == request.auth.uid);
@@ -89,5 +87,40 @@ service cloud.firestore {
       allow delete: if isAdmin() ||
         resource.data.userId == request.auth.uid;
     }
+
+    // ── Chats ──────────────────────────────────────────────────────────────────
+    match /chats/{chatId} {
+      allow read: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.landlordId == request.auth.uid
+      );
+      allow create: if isSignedIn() &&
+        request.auth.uid == request.resource.data.studentId &&
+        request.resource.data.studentId is string &&
+        request.resource.data.landlordId is string &&
+        request.resource.data.propertyId is string &&
+        request.resource.data.participants is list &&
+        request.auth.uid in request.resource.data.participants;
+      allow update: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.landlordId == request.auth.uid
+      );
+      allow delete: if false;
+
+      // ── Messages subcollection ───────────────────────────────────────────────
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+          get(/databases/$(database)/documents/chats/$(chatId)).data.studentId == request.auth.uid ||
+          get(/databases/$(database)/documents/chats/$(chatId)).data.landlordId == request.auth.uid
+        );
+        allow create: if isSignedIn() &&
+          request.auth.uid == request.resource.data.senderId &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
   }
 }
