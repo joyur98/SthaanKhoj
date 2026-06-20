@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { AlertTriangle, Home } from "lucide-react"
 import { getProperties, toggleSavedProperty, getSavedProperties } from "../services/api"
 import Navbar from "../components/Navbar"
 
@@ -94,24 +95,17 @@ function FindRooms({ darkMode, toggleDarkMode }) {
     <div className={darkMode ? "dark" : ""}>
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <section className="relative overflow-hidden min-h-screen pt-8 pb-20 bg-[#fafbfc] dark:bg-[#0b1528] transition-colors duration-300">
-
-        <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-primary-100/10 dark:bg-primary-500/5 rounded-full blur-[140px] pointer-events-none"></div>
-        <div className="absolute bottom-[10%] right-[-5%] w-[350px] h-[350px] bg-teal-100/10 dark:bg-teal-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <section className="relative overflow-hidden min-h-screen pt-28 pb-20 bg-[#FBF7F0] dark:bg-[#111827] transition-colors duration-300">
+        {/* Background Blob */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#9feadd] rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 translate-x-1/3 -translate-y-1/3" />
 
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
 
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 rounded-full border border-primary-100/40 dark:border-primary-900/30">
-              <span className="text-[10px] font-extrabold text-primary-600 dark:text-primary-400 uppercase tracking-widest">
-                Live Listings
-              </span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            <span className="sk-badge-teal">Live Listings</span>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mt-4">
               Find your{" "}
-              <span className="bg-gradient-to-r from-primary-500 to-teal-400 bg-clip-text text-transparent">
-                perfect room
-              </span>
+              <span className="bg-[#06D6A0] text-white px-2 py-0.5 rounded-lg">perfect room</span>
             </h1>
             <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed font-normal">
               Browse verified student accommodations near Kathmandu University, Dhulikhel.
@@ -119,14 +113,14 @@ function FindRooms({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] p-5 md:p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.07)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.25)] p-5 md:p-6 mb-8">
             <div className="flex flex-wrap gap-4 items-end">
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Min Price</label>
                 <input
                   name="minPrice" type="number" value={filters.minPrice}
                   onChange={handleFilterChange} placeholder="NPR"
-                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-28 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -134,7 +128,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <input
                   name="maxPrice" type="number" value={filters.maxPrice}
                   onChange={handleFilterChange} placeholder="NPR"
-                  className="w-28 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-28 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -142,7 +136,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <input
                   name="location" value={filters.location}
                   onChange={handleFilterChange} placeholder="e.g. Dhulikhel"
-                  className="w-36 bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all"
+                  className="w-36 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -150,7 +144,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 <select
                   name="available" value={filters.available}
                   onChange={handleFilterChange}
-                  className="bg-gray-50/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50 transition-all cursor-pointer"
+                  className="bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 transition-all cursor-pointer"
                 >
                   <option value="">All</option>
                   <option value="true">Available Now</option>
@@ -159,13 +153,13 @@ function FindRooms({ darkMode, toggleDarkMode }) {
               <div className="flex gap-3 ml-auto">
                 <button
                   onClick={clearFilters}
-                  className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 border border-gray-200/80 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
+                  className="px-4 py-2.5 rounded-full text-sm font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
                 >
                   Clear
                 </button>
                 <button
                   onClick={applyFilters}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+                  className="px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-[0_4px_14px_rgba(6,214,160,0.25)] hover:shadow-[0_6px_20px_rgba(6,214,160,0.35)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Search
                 </button>
@@ -175,27 +169,29 @@ function FindRooms({ darkMode, toggleDarkMode }) {
 
           {error && (
             <div className="mb-6 flex items-center gap-3 px-5 py-4 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-2xl text-red-600 dark:text-red-400 text-sm font-semibold">
-              <span>⚠</span> {error}
+              <AlertTriangle className="w-5 h-5" /> {error}
             </div>
           )}
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] overflow-hidden animate-pulse">
-                  <div className="h-48 bg-gray-100 dark:bg-white/5" />
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-[20px] overflow-hidden animate-pulse shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+                  <div className="h-48 bg-gray-100 dark:bg-gray-700" />
                   <div className="p-5 space-y-3">
-                    <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-full w-3/4" />
-                    <div className="h-3 bg-gray-100 dark:bg-white/5 rounded-full w-1/2" />
-                    <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-full w-1/3 mt-2" />
+                    <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full w-3/4" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2" />
+                    <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3 mt-2" />
                   </div>
                 </div>
               ))}
             </div>
 
           ) : rooms.length === 0 ? (
-            <div className="text-center py-24 space-y-3">
-              <p className="text-5xl">🏠</p>
+            <div className="text-center py-24 space-y-3 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400">
+                <Home className="w-10 h-10" />
+              </div>
               <p className="text-xl font-bold text-gray-700 dark:text-white">No rooms found</p>
               <p className="text-sm text-gray-400 dark:text-gray-500">Try adjusting your filters or check back later.</p>
             </div>
@@ -212,9 +208,8 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                   return (
                     <div
                       key={room.id}
-                      className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.06)] dark:hover:shadow-[0_20px_50px_rgba(16,185,129,0.04)] hover:-translate-y-1.5 transition-all duration-500 overflow-hidden"
+                      className="group relative bg-white dark:bg-gray-800 rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.07)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.25)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_16px_48px_rgba(0,0,0,0.35)] hover:-translate-y-1.5 transition-all duration-400 overflow-hidden"
                     >
-                      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                       <div className="relative h-48 bg-gray-100 dark:bg-white/5 overflow-hidden">
                         {room.images?.[0] ? (
@@ -223,8 +218,8 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-5xl text-gray-200 dark:text-white/10">
-                            🏠
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-white/5 text-gray-300 dark:text-white/10">
+                            <Home className="w-12 h-12" />
                           </div>
                         )}
                         <span className="absolute top-3 left-3 bg-white/90 dark:bg-dark-900/90 px-3 py-1 rounded-full text-xs font-extrabold text-black dark:text-white border border-gray-200/50 dark:border-white/10 backdrop-blur-md shadow-sm">
@@ -294,7 +289,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                         )}
                         <button
                           onClick={() => navigate(`/rooms/${room.id}`)}
-                          className="w-full mt-1 py-2.5 rounded-xl text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 active:scale-98"
+                          className="w-full mt-1 py-2.5 rounded-full text-xs font-bold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-[0_4px_12px_rgba(6,214,160,0.25)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                         >
                           View Details
                         </button>

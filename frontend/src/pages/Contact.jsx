@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react"
 import Navbar from "../components/Navbar"
 
 function ContactUs({ darkMode, toggleDarkMode }) {
@@ -22,7 +23,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
   const contactMethods = [
     {
-      icon: "📧",
+      icon: <Mail className="w-6 h-6" />,
       label: "Email Us",
       value: "sthaankhoj@gmail.com",
       sub: "We reply within 12 hours",
@@ -30,7 +31,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
       color: "primary",
     },
     {
-      icon: "📍",
+      icon: <MapPin className="w-6 h-6" />,
       label: "Our Location",
       value: "Dhulikhel, Kavrepalanchok",
       sub: "Near Kathmandu University",
@@ -38,7 +39,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
       color: "teal",
     },
     {
-      icon: "🕐",
+      icon: <Clock className="w-6 h-6" />,
       label: "Support Hours",
       value: "Sun – Fri, 9AM – 6PM",
       sub: "Nepal Standard Time (NPT)",
@@ -85,11 +86,11 @@ function ContactUs({ darkMode, toggleDarkMode }) {
   }
 
   return (
-    <div className="min-h-screen mesh-gradient-light dark:mesh-gradient text-dark-900 dark:text-white flex flex-col justify-between transition-colors duration-300">
+    <div className="min-h-screen bg-[#FBF7F0] dark:bg-[#111827] text-gray-900 dark:text-white flex flex-col justify-between transition-colors duration-300">
       {/* Universal Consistent Navigation */}
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <main className="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-16 space-y-16 md:space-y-24 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-16 space-y-16 md:space-y-24 flex-1 w-full">
 
         {/* Page Intro Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 animate-fadeSlideDown">
@@ -135,13 +136,15 @@ function ContactUs({ darkMode, toggleDarkMode }) {
         </section>
 
         {/* Main Split: Form + Info */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch relative">
+          {/* Background Blob */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[120%] bg-[#9feadd] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] -z-10 blur-3xl opacity-30" />
 
           {/* Contact Form (left, wider) */}
-          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] text-left flex flex-col">
+          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg -rotate-1 text-left flex flex-col">
             <div className="mb-8">
-              <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center text-lg mb-4">
-                ✉️
+              <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center mb-4">
+                <Send className="w-6 h-6" />
               </div>
               <h2 className="text-2xl font-bold text-dark-950 dark:text-white tracking-tight">Send us a message</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill out the form and we'll get back to you within 12 hours.</p>
@@ -149,8 +152,8 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
             {submitted ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-12">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-3xl">
-                  ✅
+                <div className="w-16 h-16 rounded-full bg-[#06D6A0]/10 flex items-center justify-center text-[#06D6A0]">
+                  <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-dark-950 dark:text-white">Message sent!</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
@@ -227,7 +230,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl font-bold text-white text-xs tracking-wider uppercase bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full font-bold text-white text-xs tracking-wider uppercase bg-[#06D6A0] hover:bg-[#05c490] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(6,214,160,0.25)]"
                 >
                   {loading ? (
                     <>
@@ -246,10 +249,10 @@ function ContactUs({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Right Panel: Dark card with quick info + social */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-dark-900 to-dark-950 p-8 md:p-10 rounded-[32px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-[0_16px_40px_rgba(7,18,43,0.15)] border border-white/5">
+          <div className="lg:col-span-5 bg-[#06D6A0] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg rotate-1">
             {/* Decorative glow */}
-            <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-primary-500/20 rounded-full blur-[40px] -z-0"></div>
-            <div className="absolute bottom-[-5%] left-[-5%] w-[120px] h-[120px] bg-teal-500/10 rounded-full blur-[50px] -z-0"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-white/20 rounded-full blur-[40px] -z-0"></div>
+            <div className="absolute bottom-[-5%] left-[-5%] w-[120px] h-[120px] bg-white/10 rounded-full blur-[50px] -z-0"></div>
 
             <div className="space-y-6 relative z-10">
               <div>
@@ -261,9 +264,9 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
               <div className="space-y-3">
                 {[
-                  { icon: "📧", label: "Email", val: "sthaankhoj@gmail.com" },
-                  { icon: "📍", label: "Location", val: "Dhulikhel, Kavrepalanchok" },
-                  { icon: "🕐", label: "Hours", val: "Sun–Fri, 9AM–6PM NPT" },
+                  { icon: <Mail className="w-4 h-4" />, label: "Email", val: "sthaankhoj@gmail.com" },
+                  { icon: <MapPin className="w-4 h-4" />, label: "Location", val: "Dhulikhel, Kavrepalanchok" },
+                  { icon: <Clock className="w-4 h-4" />, label: "Hours", val: "Sun–Fri, 9AM–6PM NPT" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl px-4 py-3 border border-white/5">
                     <span className="text-base mt-0.5">{item.icon}</span>
@@ -339,7 +342,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
       </main>
 
       {/* Universal Footer */}
-      <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-dark-950 py-8 text-center text-xs font-semibold text-gray-400">
+      <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-gray-900 py-8 text-center text-xs font-semibold text-gray-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© 2026 SthaanKhoj. All rights reserved.</p>
           <div className="flex gap-6">

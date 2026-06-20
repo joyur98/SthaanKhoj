@@ -84,7 +84,7 @@ function Messages({ darkMode, toggleDarkMode }) {
     <div className={darkMode ? "dark" : ""}>
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <section className="relative min-h-screen pt-8 pb-20 bg-[#fafbfc] dark:bg-[#0b1528] transition-colors duration-300">
+      <section className="relative min-h-screen pt-28 pb-20 bg-[#FBF7F0] dark:bg-[#111827] transition-colors duration-300">
         <div className="max-w-2xl mx-auto px-6 md:px-12">
           <div className="mb-8 space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 rounded-full border border-primary-100/40 dark:border-primary-900/30">
@@ -138,7 +138,7 @@ function Messages({ darkMode, toggleDarkMode }) {
               {role === "student" && (
                 <button
                   onClick={() => navigate("/find-rooms")}
-                  className="mt-4 px-6 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 shadow-[0_4px_14px_rgba(16,185,129,0.22)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.32)] transition-all hover:-translate-y-0.5"
+                  className="mt-4 px-6 py-2.5 rounded-full text-sm font-bold text-white bg-[#FF6B47] hover:bg-[#f55a35] shadow-[0_4px_12px_rgba(255,107,71,0.25)] transition-all hover:-translate-y-0.5"
                 >
                   Browse Rooms
                 </button>
@@ -157,7 +157,7 @@ function Messages({ darkMode, toggleDarkMode }) {
                   <button
                     key={chat.id}
                     onClick={() => navigate(`/chat/${chat.id}`)}
-                    className="w-full bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[20px] p-4 flex items-center gap-3 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgba(16,185,129,0.04)] hover:-translate-y-0.5 transition-all duration-300 text-left"
+                    className="w-full bg-white dark:bg-gray-800 rounded-[20px] p-4 flex items-center gap-3 hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:-translate-y-0.5 transition-all duration-300 text-left shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
                   >
                     <div className="relative shrink-0">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-teal-400 flex items-center justify-center text-white font-bold">
