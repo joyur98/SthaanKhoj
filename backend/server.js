@@ -11,6 +11,7 @@ import landlordRoutes from "./routes/landlords.js";
 import propertyRoutes from "./routes/properties.js";
 import bookingRoutes from "./routes/bookings.js";
 import adminRoutes from "./routes/admin.js";
+import reviewRoutes from "./routes/reviews.js";
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -65,6 +66,7 @@ app.use("/api/landlords", landlordRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // ── Error handling ────────────────────────────────────────────────────────────
 app.use(notFound);

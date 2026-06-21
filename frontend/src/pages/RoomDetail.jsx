@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar"
 import { ViewLocationMap } from "../components/RoomMap"
 import { useAuth } from "../context/AuthContext"
 import { getOrCreateChat } from "../services/chatService"
+import ReviewSection from "../components/ReviewSection"
 
 const KU_LAT = 27.6193
 const KU_LNG = 85.5387
@@ -145,6 +146,22 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       </span>
                     </div>
 
+                    {room.avgRating > 0 && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-amber-400 text-sm">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <span key={n}>{n <= Math.round(room.avgRating) ? "★" : "☆"}</span>
+                          ))}
+                        </span>
+                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                          {room.avgRating.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          ({room.reviewCount || 0} review{room.reviewCount !== 1 ? "s" : ""})
+                        </span>
+                      </div>
+                    )}
+
                     <p className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 mb-2">
                       📍 {room.location}
                     </p>
@@ -183,6 +200,8 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     lng={room.lng}
                     title={room.title}
                   />
+
+                  <ReviewSection propertyId={id} />
 
                 </div>
 
