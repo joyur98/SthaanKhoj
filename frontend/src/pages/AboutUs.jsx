@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { ShieldCheck, GraduationCap, Handshake, Zap, Target, Sparkles, Laptop } from "lucide-react"
 import Navbar from "../components/Navbar"
 
 function AboutUs({ darkMode, toggleDarkMode }) {
@@ -8,31 +9,31 @@ function AboutUs({ darkMode, toggleDarkMode }) {
     {
       title: "Trust First",
       desc: "Vigorously verified listings ensuring complete transparency and peace of mind for every single applicant.",
-      icon: "🛡️",
+      icon: <ShieldCheck className="w-8 h-8 text-[#06D6A0]" />,
     },
     {
       title: "Student Accessibility",
       desc: "Tailored discovery routes designed to match the budget constraints and housing requirements of students.",
-      icon: "🎓",
+      icon: <GraduationCap className="w-8 h-8 text-[#06D6A0]" />,
     },
     {
       title: "Vibrant Community",
       desc: "Fostering long-term respectful relationships by bridging landlords and university students smoothly.",
-      icon: "🤝",
+      icon: <Handshake className="w-8 h-8 text-[#06D6A0]" />,
     },
     {
       title: "Total Convenience",
       desc: "Streamlined search tools, location breakdowns, and instant direct coordination with zero intermediaries.",
-      icon: "⚡",
+      icon: <Zap className="w-8 h-8 text-[#06D6A0]" />,
     },
   ]
 
   return (
-    <div className="min-h-screen mesh-gradient-light dark:mesh-gradient text-dark-900 dark:text-white flex flex-col justify-between transition-colors duration-300">
+    <div className="min-h-screen bg-[#FBF7F0] dark:bg-[#111827] text-gray-900 dark:text-white flex flex-col justify-between transition-colors duration-300">
       {/* Universal Consistent Navigation */}
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <main className="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-16 space-y-16 md:space-y-24 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-16 space-y-16 md:space-y-24 flex-1 w-full">
         {/* Dynamic Page Intro Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 animate-fadeSlideDown">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 rounded-full border border-primary-100 dark:border-primary-900/30">
@@ -49,13 +50,16 @@ function AboutUs({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Mission and Vision Grid Section */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+          {/* Background Blob */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-[#9feadd] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] -z-10 blur-3xl opacity-30" />
+
           {/* Mission Card */}
-          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.04)] hover:-translate-y-1.5 transition-all duration-500 text-left">
-            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[32px]"></div>
+          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl -rotate-1 transition-all duration-500 text-left">
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[24px]"></div>
             
-            <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center text-xl font-bold mb-6">
-              🎯
+            <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center mb-6">
+              <Target className="w-6 h-6" />
             </div>
             
             <h2 className="text-2xl font-bold text-dark-950 dark:text-white mb-4 tracking-tight">
@@ -67,11 +71,11 @@ function AboutUs({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Vision Card */}
-          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(7,18,43,0.04)] hover:-translate-y-1.5 transition-all duration-500 text-left">
-            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-teal-500 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[32px]"></div>
+          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl rotate-1 transition-all duration-500 text-left">
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[24px]"></div>
             
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xl font-bold mb-6">
-              ✨
+            <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center mb-6">
+              <Sparkles className="w-6 h-6" />
             </div>
             
             <h2 className="text-2xl font-bold text-dark-950 dark:text-white mb-4 tracking-tight">
@@ -98,9 +102,9 @@ function AboutUs({ darkMode, toggleDarkMode }) {
             {values.map((v, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-6 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.005)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_30px_rgba(7,18,43,0.02)] transition-all duration-300 flex flex-col text-left"
+                className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col text-left"
               >
-                <div className="text-3xl mb-4">{v.icon}</div>
+                <div className="mb-4 bg-[#06D6A0]/10 w-14 h-14 rounded-xl flex items-center justify-center">{v.icon}</div>
                 <h3 className="text-lg font-bold text-dark-950 dark:text-white mb-2 tracking-tight">
                   {v.title}
                 </h3>
@@ -115,10 +119,10 @@ function AboutUs({ darkMode, toggleDarkMode }) {
         {/* Side-by-side Split Team & Contact Panel */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Team Info Card (left) */}
-          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] text-left flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg -rotate-1 text-left flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg font-bold">
-                💻
+              <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center">
+                <Laptop className="w-6 h-6" />
               </div>
               <h2 className="text-2xl font-bold text-dark-950 dark:text-white tracking-tight">
                 Our Tech Team
@@ -138,9 +142,9 @@ function AboutUs({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Contact Form Details (right) */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-dark-900 to-dark-950 p-8 md:p-10 rounded-[32px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-[0_16px_40px_rgba(7,18,43,0.15)] border border-white/5">
+          <div className="lg:col-span-5 bg-[#06D6A0] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg rotate-1">
             {/* Soft decorative blur spot */}
-            <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-primary-500/20 rounded-full blur-[40px] -z-0"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-white/20 rounded-full blur-[40px] -z-0"></div>
             
             <div className="space-y-4 relative z-10">
               <h2 className="text-2xl font-bold tracking-tight">
@@ -166,7 +170,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
 
               <button
                 onClick={() => setShowPopup(true)}
-                className="inline-flex justify-center items-center w-full py-3.5 rounded-xl font-bold text-white text-xs tracking-wider uppercase bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all cursor-pointer text-center"
+                className="inline-flex justify-center items-center w-full py-3.5 rounded-full font-bold text-[#06D6A0] text-xs tracking-wider uppercase bg-white hover:bg-gray-50 transition-all cursor-pointer text-center shadow-md"
               >
                 Send Email Message
               </button>
@@ -203,7 +207,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Message</label>
                 <textarea required rows="4" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
               </div>
-              <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-md transition-all cursor-pointer">
+              <button type="submit" className="w-full py-3.5 rounded-full font-bold text-white text-sm bg-[#06D6A0] hover:bg-[#05c490] shadow-md transition-all cursor-pointer">
                 Send Message
               </button>
             </form>
@@ -212,7 +216,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
       )}
 
       {/* Universal Footer */}
-      <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-dark-950 py-8 text-center text-xs font-semibold text-gray-400">
+      <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-gray-900 py-8 text-center text-xs font-semibold text-gray-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© 2026 SthaanKhoj. All rights reserved.</p>
           <div className="flex gap-6">

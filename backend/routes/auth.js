@@ -75,49 +75,37 @@ router.post("/register", authLimiter, registerRules, validate, async (req, res, 
 router.post("/google-signin", async (req, res, next) => {
   try {
     const { email, fullName, role, uid, phone } = req.body;
+    if (!email || !uid) return res.status(400).json({ error: "Missing required fields" });
 
-    if (!email || !uid) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    // Set custom claim for role
-    await auth.setCustomUserClaims(uid, { role });
-
-    // Create/Update Firestore profile
     const now = new Date().toISOString();
+
+    // Check if user already exists
+    const existing = await db.collection("users").doc(uid).get();
+    const finalRole = existing.exists ? existing.data().role : role; // ← keep existing role
+
+    await auth.setCustomUserClaims(uid, { role: finalRole });
+
     const profile = {
-      uid,
-      email,
+      uid, email,
       fullName: fullName || email.split('@')[0],
-      role,
+      role: finalRole,
       phone: phone || null,
       isActive: true,
       updatedAt: now,
+      ...(!existing.exists ? { createdAt: now } : {}),
     };
 
     await db.collection("users").doc(uid).set(profile, { merge: true });
 
-    // Create role-specific sub-document
-    const subCollection = role === "student" ? "students" : "landlords";
-    const subProfile = {
-      uid,
-      email,
-      fullName: fullName || email.split('@')[0],
-      role,
-      updatedAt: now,
-      ...(role === "student" ? { savedProperties: [], bookings: [] } : {}),
-      ...(role === "landlord" ? { properties: [], verified: false } : {}),
-    };
+    const subCollection = finalRole === "student" ? "students" : "landlords";
+    await db.collection(subCollection).doc(uid).set({
+      ...profile,
+      ...(finalRole === "student" ? { savedProperties: [], bookings: [] } : {}),
+      ...(finalRole === "landlord" ? { properties: [], verified: false } : {}),
+    }, { merge: true });
 
-    await db.collection(subCollection).doc(uid).set(subProfile, { merge: true });
-
-    res.json({
-      message: "Google user synced successfully.",
-      uid,
-      role,
-    });
+    res.json({ message: "Google user synced successfully.", uid, role: finalRole });
   } catch (err) {
-    console.error("Google sign-in error:", err);
     next(err);
   }
 });

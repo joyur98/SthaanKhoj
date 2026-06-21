@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { Search, MapPin, Home } from "lucide-react"
 import { getSavedProperties, toggleSavedProperty } from "../services/api"
 
 function Favorites({ darkMode, toggleDarkMode }) {
@@ -48,14 +49,14 @@ function Favorites({ darkMode, toggleDarkMode }) {
   })
 
   return (
-    <div className={`min-h-screen ${darkMode ? "dark" : ""} mesh-gradient-light dark:mesh-gradient`}>
+    <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-[#FBF7F0] dark:bg-[#111827] transition-colors duration-300`}>
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      {/* Background blobs */}
-      <div className="fixed top-[-10%] left-[-10%] w-[350px] md:w-[500px] h-[350px] md:h-[500px] bg-rose-200/20 dark:bg-rose-500/10 rounded-full blur-[80px] md:blur-[120px] pointer-events-none -z-10 animate-pulse-slow"></div>
-      <div className="fixed bottom-[10%] right-[-10%] w-[300px] md:w-[450px] h-[300px] md:h-[450px] bg-primary-200/20 dark:bg-primary-500/10 rounded-full blur-[80px] md:blur-[120px] pointer-events-none -z-10 animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
 
-      <main className="max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-16">
+
+      <main className="max-w-7xl mx-auto px-6 md:px-12 pt-28 pb-16 relative">
+        {/* Background Blob */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF6B47] rounded-full mix-blend-multiply filter blur-3xl opacity-10 -z-10 translate-x-1/4 -translate-y-1/4" />
 
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
@@ -102,10 +103,10 @@ function Favorites({ darkMode, toggleDarkMode }) {
 
         {/* Filters — only show when there are favorites */}
         {!loading && favorites.length > 0 && (
-          <div className="glass-card dark:glass-card-dark rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-white/60 dark:border-white/10 mb-12 max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.07)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.25)] mb-12 max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
             <div className="flex-1 space-y-1.5">
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1">
-                🔍 Search
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5" /> Search
               </label>
               <input
                 type="text"
@@ -116,8 +117,8 @@ function Favorites({ darkMode, toggleDarkMode }) {
               />
             </div>
             <div className="md:w-64 space-y-1.5">
-              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1">
-                📍 Location
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" /> Location
               </label>
               <select
                 value={locationFilter}
@@ -159,9 +160,11 @@ function Favorites({ darkMode, toggleDarkMode }) {
 
         {/* Empty state — filters return nothing */}
         {!loading && favorites.length > 0 && filteredFavorites.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No matches found</h3>
+          <div className="text-center py-20 flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400">
+              <Search className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">No matches found</h3>
             <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or location filter.</p>
           </div>
         )}
@@ -172,7 +175,7 @@ function Favorites({ darkMode, toggleDarkMode }) {
             {filteredFavorites.map((room) => (
               <div
                 key={room.id}
-                className="group relative glass-card dark:glass-card-dark rounded-[24px] overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] border border-white/60 dark:border-white/10 hover:-translate-y-1"
+                className={`group relative bg-white dark:bg-gray-800 rounded-[24px] overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 ${room.id.charCodeAt(0) % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
                 style={{
                   transition: "opacity 0.35s ease, transform 0.35s ease, box-shadow 0.5s ease",
                   opacity: removingId === room.id ? 0 : 1,
@@ -190,8 +193,8 @@ function Favorites({ darkMode, toggleDarkMode }) {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-5xl text-gray-300 dark:text-white/10">
-                      🏠
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-white/5 text-gray-300 dark:text-white/10">
+                      <Home className="w-12 h-12" />
                     </div>
                   )}
 
@@ -227,8 +230,8 @@ function Favorites({ darkMode, toggleDarkMode }) {
                     <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {room.title}
                     </h3>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <span className="text-primary-500">📍</span> {room.location}
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1">
+                      <MapPin className="w-3.5 h-3.5 text-primary-500" /> {room.location}
                     </p>
                   </div>
 
