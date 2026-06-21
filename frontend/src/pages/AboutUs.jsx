@@ -55,7 +55,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-[#9feadd] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] -z-10 blur-3xl opacity-30" />
 
           {/* Mission Card */}
-          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl -rotate-1 transition-all duration-500 text-left">
+          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl  transition-all duration-500 text-left">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[24px]"></div>
             
             <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center mb-6">
@@ -71,7 +71,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Vision Card */}
-          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl rotate-1 transition-all duration-500 text-left">
+          <div className="group relative bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg hover:shadow-xl  transition-all duration-500 text-left">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-[#06D6A0] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[24px]"></div>
             
             <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center mb-6">
@@ -119,7 +119,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
         {/* Side-by-side Split Team & Contact Panel */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Team Info Card (left) */}
-          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg -rotate-1 text-left flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 p-8 md:p-10 rounded-[24px] shadow-lg  text-left flex flex-col justify-between">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-[#06D6A0]/10 text-[#06D6A0] flex items-center justify-center">
                 <Laptop className="w-6 h-6" />
@@ -142,7 +142,7 @@ function AboutUs({ darkMode, toggleDarkMode }) {
           </div>
 
           {/* Contact Form Details (right) */}
-          <div className="lg:col-span-5 bg-[#06D6A0] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg rotate-1">
+          <div className="lg:col-span-5 bg-[#06D6A0] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg ">
             {/* Soft decorative blur spot */}
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-white/20 rounded-full blur-[40px] -z-0"></div>
             

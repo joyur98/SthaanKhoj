@@ -178,7 +178,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                       value={formData.name}
                       onChange={handleChange}
                       className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
-                      placeholder="Ram Sharma"
+                      placeholder=""
                     />
                   </div>
                   <div>
@@ -190,7 +190,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
-                      placeholder="ram@example.com"
+                      placeholder=""
                     />
                   </div>
                 </div>
