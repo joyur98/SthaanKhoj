@@ -7,6 +7,25 @@ const ROOM_TYPE_LABELS = {
   room: "Room", flat: "Flat", studio: "Studio", house: "House", pg: "PG",
 }
 
+// KU Main Gate coordinates
+const KU_LAT = 27.6193
+const KU_LNG = 85.5387
+
+const getDistanceFromKU = (lat, lng) => {
+  if (!lat || !lng) return null
+  const R = 6371
+  const dLat = ((lat - KU_LAT) * Math.PI) / 180
+  const dLng = ((lng - KU_LNG) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((KU_LAT * Math.PI) / 180) *
+    Math.cos((lat * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return (R * c).toFixed(2)
+}
+
 function FindRooms({ darkMode, toggleDarkMode }) {
   const navigate = useNavigate()
   const [rooms, setRooms] = useState([])
@@ -19,12 +38,10 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   })
   const [applied, setApplied] = useState({})
 
-  // Load rooms
   useEffect(() => {
     fetchRooms(applied)
   }, [applied])
 
-  // Load saved property IDs from Firestore on mount
   useEffect(() => {
     const loadSaved = async () => {
       try {
@@ -67,18 +84,14 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   const handleToggleSave = async (room) => {
     if (togglingId === room.id) return
     setTogglingId(room.id)
-
-    // Optimistic update
     setSaved((prev) => {
       const next = new Set(prev)
       next.has(room.id) ? next.delete(room.id) : next.add(room.id)
       return next
     })
-
     try {
       await toggleSavedProperty(room.id)
     } catch (err) {
-      // Revert on failure
       setSaved((prev) => {
         const next = new Set(prev)
         next.has(room.id) ? next.delete(room.id) : next.add(room.id)
@@ -118,7 +131,6 @@ function FindRooms({ darkMode, toggleDarkMode }) {
             </p>
           </div>
 
-          {/* Filters */}
           <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] p-5 md:p-6 mb-8">
             <div className="flex flex-wrap gap-4 items-end">
               <div className="space-y-1.5">
@@ -209,6 +221,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                 {rooms.map((room) => {
                   const isSaved = saved.has(room.id)
                   const isToggling = togglingId === room.id
+                  const distance = getDistanceFromKU(room.lat, room.lng)
                   return (
                     <div
                       key={room.id}
@@ -231,7 +244,12 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                           {ROOM_TYPE_LABELS[room.roomType] || room.roomType}
                         </span>
 
-                        {/* Heart button — wired to Firestore */}
+                        {distance && (
+                          <span className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-1">
+                            🎓 {distance} km from KU
+                          </span>
+                        )}
+
                         <button
                           onClick={() => handleToggleSave(room)}
                           disabled={isToggling}

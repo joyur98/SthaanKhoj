@@ -6,10 +6,27 @@ import { ViewLocationMap } from "../components/RoomMap"
 import { useAuth } from "../context/AuthContext"
 import { getOrCreateChat } from "../services/chatService"
 
+const KU_LAT = 27.6193
+const KU_LNG = 85.5387
+
+const getDistanceFromKU = (lat, lng) => {
+  if (!lat || !lng) return null
+  const R = 6371
+  const dLat = ((lat - KU_LAT) * Math.PI) / 180
+  const dLng = ((lng - KU_LNG) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((KU_LAT * Math.PI) / 180) *
+    Math.cos((lat * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return (R * c).toFixed(2)
+}
+
 function RoomDetail({ darkMode, toggleDarkMode }) {
   const { id } = useParams()
   const navigate = useNavigate()
-
   const { user } = useAuth()
 
   const [room, setRoom] = useState(null)
@@ -27,26 +44,16 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
 
   const handleContactLandlord = async () => {
     if (!user || !room) return
-
-    console.log("user.uid:", user.uid)
-    console.log("room.landlordId:", room.landlordId)
-    console.log("room id:", id)
-
-    if (!room.landlordId) {
-      console.error("landlordId is missing from room data!", room)
-      return
-    }
+    if (!room.landlordId) return
 
     try {
       setChatLoading(true)
-
       const chatId = await getOrCreateChat(
         user.uid,
         room.landlordId,
         id,
         room.title
       )
-
       navigate(`/chat/${chatId}`)
     } catch (err) {
       console.error("getOrCreateChat error:", err)
@@ -99,7 +106,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       alt={room.title}
                       className="w-full h-72 md:h-96 object-cover"
                     />
-
                     {room.images.length > 1 && (
                       <div className="flex gap-2 p-4 overflow-x-auto">
                         {room.images.map((img, i) => (
@@ -130,20 +136,24 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                 <div className="md:col-span-2 space-y-6">
 
                   <div className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-[28px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
-
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                         {room.title}
                       </h1>
-
                       <span className="shrink-0 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400 text-xs font-bold rounded-full border border-primary-100/50 dark:border-primary-900/30 capitalize">
                         {room.roomType}
                       </span>
                     </div>
 
-                    <p className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 mb-4">
+                    <p className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 mb-2">
                       📍 {room.location}
                     </p>
+
+                    {getDistanceFromKU(room.lat, room.lng) && (
+                      <p className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 font-semibold mb-4">
+                        🎓 {getDistanceFromKU(room.lat, room.lng)} km from KU Main Gate
+                      </p>
+                    )}
 
                     <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                       {room.description}
@@ -155,7 +165,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">
                         Amenities
                       </h2>
-
                       <div className="flex flex-wrap gap-2">
                         {room.amenities.map((a) => (
                           <span
@@ -183,17 +192,14 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     <p className="text-3xl font-extrabold text-primary-600 dark:text-primary-400">
                       NPR {room.price?.toLocaleString()}
                     </p>
-
                     <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-1">
                       per month
                     </p>
 
                     <div className="mt-6 space-y-3">
-
                       <button className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300">
                         Request Booking
                       </button>
-
                       <button
                         onClick={handleContactLandlord}
                         disabled={chatLoading}
@@ -201,7 +207,6 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       >
                         {chatLoading ? "Opening chat..." : "Contact Landlord"}
                       </button>
-
                     </div>
                   </div>
                 </div>
