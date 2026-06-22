@@ -7,8 +7,8 @@ import { useAuth } from "../context/AuthContext"
 import { getOrCreateChat } from "../services/chatService"
 import ReviewSection from "../components/ReviewSection"
 
-const KU_LAT = 27.6193
-const KU_LNG = 85.5387
+const KU_LAT = 27.620532425085997 
+const KU_LNG = 85.53841251986667
 
 const getDistanceFromKU = (lat, lng) => {
   if (!lat || !lng) return null

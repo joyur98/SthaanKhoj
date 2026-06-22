@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 @custom-variant dark (&:where(.dark, .dark *));
+@import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;

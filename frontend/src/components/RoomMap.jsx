@@ -1,6 +1,7 @@
-import { useState } from "react"
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet"
+import { useState, useEffect } from "react"
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet"
 import L from "leaflet"
+import "leaflet-routing-machine"
 
 delete L.Icon.Default.prototype._getIconUrl
 
@@ -13,12 +14,49 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 })
 
+const KU_LAT = 27.620532425085997
+const KU_LNG = 85.53841251986667
+
 function LocationPicker({ onLocationSelect }) {
   useMapEvents({
     click(e) {
       onLocationSelect(e.latlng.lat, e.latlng.lng)
     },
   })
+
+  return null
+}
+
+function RouteFromKU({ lat, lng }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!lat || !lng) return
+
+    const routingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(KU_LAT, KU_LNG),
+        L.latLng(lat, lng),
+      ],
+      router: L.Routing.osrmv1({
+        serviceUrl: "https://router.project-osrm.org/route/v1",
+        profile: "driving",
+      }),
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: true,
+      show: false,
+      lineOptions: {
+        styles: [{ color: "#10b981", weight: 5, opacity: 0.8 }],
+      },
+      createMarker: () => null,
+    }).addTo(map)
+
+    return () => {
+      map.removeControl(routingControl)
+    }
+  }, [map, lat, lng])
 
   return null
 }
@@ -101,6 +139,28 @@ export function PickLocationMap({ lat, lng, onLocationSelect }) {
 
 export function ViewLocationMap({ lat, lng, title }) {
   const [satellite, setSatellite] = useState(false)
+  const [roadDistance, setRoadDistance] = useState(null)
+  const [roadDuration, setRoadDuration] = useState(null)
+
+  useEffect(() => {
+    if (!lat || !lng) return
+
+    const fetchRoadDistance = async () => {
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${KU_LNG},${KU_LAT};${lng},${lat}?overview=false`
+        const res = await fetch(url)
+        const data = await res.json()
+        if (data.routes?.[0]) {
+          setRoadDistance((data.routes[0].distance / 1000).toFixed(1))
+          setRoadDuration(Math.round(data.routes[0].duration / 60))
+        }
+      } catch (err) {
+        console.error("Could not fetch road distance:", err)
+      }
+    }
+
+    fetchRoadDistance()
+  }, [lat, lng])
 
   if (!lat || !lng) return null
 
@@ -120,10 +180,27 @@ export function ViewLocationMap({ lat, lng, title }) {
         </button>
       </div>
 
+      {roadDistance && (
+        <div className="flex items-center gap-4 mb-4 px-4 py-3 bg-primary-50 dark:bg-primary-950/30 rounded-2xl border border-primary-100/50 dark:border-primary-900/30">
+          <div className="flex items-center gap-1.5">
+            <span className="text-primary-600 dark:text-primary-400">🚗</span>
+            <span className="text-sm font-bold text-gray-900 dark:text-white">{roadDistance} km</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">via road</span>
+          </div>
+          {roadDuration && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-primary-600 dark:text-primary-400">⏱</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">{roadDuration} min</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">drive from KU</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="rounded-2xl overflow-hidden h-80">
         <MapContainer
           center={[lat, lng]}
-          zoom={17}
+          zoom={15}
           style={{ height: "100%", width: "100%" }}
           scrollWheelZoom={true}
         >
@@ -151,16 +228,18 @@ export function ViewLocationMap({ lat, lng, title }) {
           <Marker position={[lat, lng]}>
             <Popup>{title}</Popup>
           </Marker>
+
+          <RouteFromKU lat={lat} lng={lng} />
         </MapContainer>
       </div>
 
-      <a
-        href={"https://www.google.com/maps?q=" + lat + "," + lng}
+   <a   
+        href={"https://www.google.com/maps/dir/?api=1&origin=" + KU_LAT + "," + KU_LNG + "&destination=" + lat + "," + lng}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
       >
-        Open in Google Maps
+        Get directions in Google Maps
       </a>
     </div>
   )
