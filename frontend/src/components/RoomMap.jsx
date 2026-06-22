@@ -17,6 +17,10 @@ L.Icon.Default.mergeOptions({
 const KU_LAT = 27.620532425085997
 const KU_LNG = 85.53841251986667
 
+// OSRM assumes ideal highway speeds; Nepal roads are slower due to
+// traffic, narrow roads, and curves — so we correct the estimate.
+const NEPAL_TRAFFIC_MULTIPLIER = 1.8
+
 function LocationPicker({ onLocationSelect }) {
   useMapEvents({
     click(e) {
@@ -152,7 +156,9 @@ export function ViewLocationMap({ lat, lng, title }) {
         const data = await res.json()
         if (data.routes?.[0]) {
           setRoadDistance((data.routes[0].distance / 1000).toFixed(1))
-          setRoadDuration(Math.round(data.routes[0].duration / 60))
+          setRoadDuration(
+            Math.round((data.routes[0].duration / 60) * NEPAL_TRAFFIC_MULTIPLIER)
+          )
         }
       } catch (err) {
         console.error("Could not fetch road distance:", err)
@@ -181,17 +187,22 @@ export function ViewLocationMap({ lat, lng, title }) {
       </div>
 
       {roadDistance && (
-        <div className="flex items-center gap-4 mb-4 px-4 py-3 bg-primary-50 dark:bg-primary-950/30 rounded-2xl border border-primary-100/50 dark:border-primary-900/30">
-          <div className="flex items-center gap-1.5">
-            <span className="text-primary-600 dark:text-primary-400">🚗</span>
-            <span className="text-sm font-bold text-gray-900 dark:text-white">{roadDistance} km</span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">via road</span>
+        <div className="flex items-center justify-center gap-6 mb-4 px-5 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">🚗</span>
+            <div className="text-left">
+              <p className="text-lg font-extrabold text-white leading-none">{roadDistance} km</p>
+              <p className="text-[11px] text-white/80 font-semibold mt-0.5">via road</p>
+            </div>
           </div>
+          <div className="w-px h-9 bg-white/30" />
           {roadDuration && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-primary-600 dark:text-primary-400">⏱</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white">{roadDuration} min</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">drive from KU</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">⏱</span>
+              <div className="text-left">
+                <p className="text-lg font-extrabold text-white leading-none">{roadDuration} min</p>
+                <p className="text-[11px] text-white/80 font-semibold mt-0.5">drive from KU</p>
+              </div>
             </div>
           )}
         </div>
@@ -206,8 +217,8 @@ export function ViewLocationMap({ lat, lng, title }) {
         >
           {!satellite && (
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="© OpenStreetMap"
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+              attribution="© OpenStreetMap © CARTO"
             />
           )}
 
@@ -233,13 +244,16 @@ export function ViewLocationMap({ lat, lng, title }) {
         </MapContainer>
       </div>
 
-   <a   
+      <a
         href={"https://www.google.com/maps/dir/?api=1&origin=" + KU_LAT + "," + KU_LNG + "&destination=" + lat + "," + lng}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+        className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors duration-200"
       >
-        Get directions in Google Maps
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+        </svg>
+        Get Directions
       </a>
     </div>
   )
