@@ -17,6 +17,7 @@ import Chat from "./pages/Chat"
 import AIChatbot from "./components/AIChatbot"
 import StudentProfile from "./pages/StudentProfile"
 import LandlordProfile from "./pages/LandlordProfile"
+import PriceAnalytics from "./pages/PriceAnalytics"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
@@ -37,13 +38,11 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
     })
-
     return () => unsubscribe()
   }, [])
 
   useEffect(() => {
     const root = document.documentElement
-
     if (darkMode) {
       root.classList.add("dark")
     } else {
@@ -53,15 +52,12 @@ function App() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-
     const handleChange = (e) => {
       if (!localStorage.getItem("theme")) {
         setDarkMode(e.matches)
       }
     }
-
     mediaQuery.addEventListener("change", handleChange)
-
     return () => mediaQuery.removeEventListener("change", handleChange)
   }, [])
 
@@ -76,115 +72,21 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={<Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
-        />
+        <Route path="/" element={<Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+        <Route path="/login" element={<Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
 
-        <Route
-          path="/login"
-          element={<Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
-        />
-
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute user={user}>
-              <Home darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/find-rooms"
-          element={
-            <ProtectedRoute user={user}>
-              <FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/rooms/:id"
-          element={
-            <ProtectedRoute user={user}>
-              <RoomDetail darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/messages"
-          element={
-            <ProtectedRoute user={user}>
-              <Messages darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/chat/:chatId"
-          element={
-            <ProtectedRoute user={user}>
-              <Chat darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/about"
-          element={
-            <ProtectedRoute user={user}>
-              <AboutUs darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/contact"
-          element={
-            <ProtectedRoute user={user}>
-              <Contact darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/favorites"
-          element={
-            <ProtectedRoute user={user}>
-              <Favorites darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/post-room"
-          element={
-            <ProtectedRoute user={user}>
-              <PostRoom darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile/student"
-          element={
-            <ProtectedRoute user={user}>
-              <StudentProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/profile/landlord"
-          element={
-          <ProtectedRoute user={user}>
-            <LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-          </ProtectedRoute>
-          }
-        />
-        
+        <Route path="/home" element={<ProtectedRoute user={user}><Home darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/find-rooms" element={<ProtectedRoute user={user}><FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/rooms/:id" element={<ProtectedRoute user={user}><RoomDetail darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute user={user}><Messages darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/chat/:chatId" element={<ProtectedRoute user={user}><Chat darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute user={user}><AboutUs darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/contact" element={<ProtectedRoute user={user}><Contact darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/favorites" element={<ProtectedRoute user={user}><Favorites darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/post-room" element={<ProtectedRoute user={user}><PostRoom darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/profile/student" element={<ProtectedRoute user={user}><StudentProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/profile/landlord" element={<ProtectedRoute user={user}><LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute user={user}><PriceAnalytics darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
       </Routes>
 
       {user && <AIChatbot darkMode={darkMode} />}

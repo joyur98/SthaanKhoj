@@ -4,14 +4,17 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { listenToUnreadCount } from "../services/chatService"
 
+
 function Navbar({ darkMode, toggleDarkMode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
 
+
   const location = useLocation()
   const navigate = useNavigate()
   const { user, role, logout } = useAuth()
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -19,22 +22,27 @@ function Navbar({ darkMode, toggleDarkMode }) {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+
   useEffect(() => {
     if (!user || !role) { setUnreadCount(0); return }
     const unsubscribe = listenToUnreadCount(user.uid, role, setUnreadCount)
     return () => unsubscribe()
   }, [user, role])
 
+
   const navLinks = [
     { name: "Home", path: "/home" },
     { name: "Find Rooms", path: "/find-rooms" },
     { name: "Messages", path: "/messages", badge: unreadCount },
     { name: "Favorites", path: "/favorites" },
+    { name: "Analytics", path: "/analytics" },
     { name: "About Us", path: "/about" },
     { name: "Contact", path: "/contact" },
   ]
 
+
   const isActive = (path) => location.pathname === path
+
 
   const handleLogout = async () => {
     try {
@@ -44,6 +52,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
       console.error("Logout failed:", error)
     }
   }
+
 
   return (
     <>
@@ -57,6 +66,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
         }`}
       >
         <div className="bg-white dark:bg-gray-900 rounded-full px-4 py-2.5 flex items-center justify-between gap-3">
+
 
           {/* ── Logo Lockup ─────────────────────────────────────────── */}
           <Link
@@ -82,6 +92,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </div>
           </Link>
 
+
           {/* ── Desktop Nav Links ────────────────────────────────────── */}
           <div className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((link) => (
@@ -103,14 +114,16 @@ function Navbar({ darkMode, toggleDarkMode }) {
                   )}
                 </span>
                   {isActive(link.path) && (
-                  <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-[60%] h-[3px] bg-[#06D6A0] rounded-full" />
-                )}
+                    <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-[60%] h-[3px] bg-[#06D6A0] rounded-full" />
+                  )}
               </Link>
             ))}
           </div>
 
+
           {/* ── Desktop Controls ─────────────────────────────────────── */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
+
 
             {/* Theme toggle — outline pill */}
             <button
@@ -131,6 +144,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               </div>
             </button>
 
+
             {/* Profile button — outline circle */}
             <Link
               to={role === "landlord" ? "/profile/landlord" : "/profile/student"}
@@ -142,6 +156,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               </svg>
             </Link>
 
+
             {/* Landlord: Post a Room */}
             {role === "landlord" && (
               <Link
@@ -151,6 +166,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 Post Room
               </Link>
             )}
+
 
             {/* Log Out / Log In — coral pill */}
             {user ? (
@@ -170,6 +186,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             )}
           </div>
 
+
           {/* ── Mobile Hamburger ─────────────────────────────────────── */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -184,8 +201,10 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </div>
           </button>
 
+
         </div>
       </nav>
+
 
       {/* ── Mobile backdrop ──────────────────────────────────────────── */}
       {mobileMenuOpen && (
@@ -194,6 +213,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
+
 
       {/* ── Mobile Drawer ────────────────────────────────────────────── */}
       <div
@@ -223,6 +243,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </button>
           </div>
 
+
           {/* Nav links */}
           <div className="flex flex-col gap-1">
             {navLinks.map((link) => (
@@ -250,6 +271,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           </div>
         </div>
 
+
         {/* Drawer bottom: theme + actions */}
         <div className="space-y-3 pt-6 border-t border-gray-100 dark:border-white/10">
           <div className="flex items-center justify-between px-1 mb-4">
@@ -265,6 +287,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </button>
           </div>
 
+
           {role === "landlord" && (
             <Link
               to="/post-room"
@@ -274,6 +297,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               Post a Room
             </Link>
           )}
+
 
           {user && (
             <button
@@ -291,5 +315,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
     </>
   )
 }
+
 
 export default Navbar

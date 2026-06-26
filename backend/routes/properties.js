@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../firebase/firebaseAdmin.js";
 import { authenticate, requireLandlord, requireAdmin, requireLandlordOrAdmin } from "../middleware/auth.js";
 import { propertyRules, paginationRules, validate } from "../middleware/validate.js";
+import { detectFraud } from "../middleware/fraudDetection.js";
 
 const router = Router();
 
@@ -14,7 +15,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
 
     if (available === "true") query = query.where("isAvailable", "==", true);
 
-    // Always order by createdAt to use the existing working Firebase index
     query = query.orderBy("createdAt", "desc").limit(limit);
 
     if (req.query.startAfter) {
@@ -25,9 +25,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // --- Client-side (In-Memory) Filtering to avoid Firebase Index errors ---
-
-    // 1. Price filter
     if (minPrice) {
       const min = parseFloat(minPrice);
       properties = properties.filter((p) => p.price >= min);
@@ -55,11 +52,6 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
   }
 });
 
-/**
- * POST /api/properties/chatbot-search
- * Smart search endpoint for the AI chatbot.
- * Supports amenity filtering, price range, location, room type.
- */
 router.post("/chatbot-search", async (req, res, next) => {
   try {
     const { location, minPrice, maxPrice, amenities, roomType, available } = req.body;
@@ -69,15 +61,11 @@ router.post("/chatbot-search", async (req, res, next) => {
 
     if (available === "true") query = query.where("isAvailable", "==", true);
 
-    // Always order by createdAt to use the existing working Firebase index
     query = query.orderBy("createdAt", "desc").limit(limit);
 
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // --- Client-side (In-Memory) Filtering to avoid Firebase Index errors ---
-
-    // 1. Price filter
     if (minPrice) {
       const min = parseFloat(minPrice);
       properties = properties.filter((p) => p.price >= min);
@@ -87,18 +75,15 @@ router.post("/chatbot-search", async (req, res, next) => {
       properties = properties.filter((p) => p.price <= max);
     }
 
-    // 2. Location filter (Firestore limitation)
     if (location) {
       const loc = location.toLowerCase();
       properties = properties.filter((p) => p.location?.toLowerCase().includes(loc));
     }
 
-    // 3. Room type filter
     if (roomType) {
       properties = properties.filter((p) => p.roomType === roomType);
     }
 
-    // Client-side amenities filter — property must have ALL requested amenities
     if (amenities && Array.isArray(amenities) && amenities.length > 0) {
       properties = properties.filter((p) => {
         const propAmenities = (p.amenities || []).map((a) => a.toLowerCase());
@@ -106,12 +91,12 @@ router.post("/chatbot-search", async (req, res, next) => {
       });
     }
 
-    // Also collect unique locations for suggestions
     const allSnap = await db.collection("properties")
       .where("isActive", "==", true)
       .select("location")
       .limit(200)
       .get();
+
     const locations = [...new Set(
       allSnap.docs.map((d) => d.data().location).filter(Boolean)
     )];
@@ -142,25 +127,40 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", authenticate, requireLandlord, propertyRules, validate, async (req, res, next) => {
   try {
-    const { title, description, price, location, availableFrom, amenities, images, roomType, lat, lng } = req.body;
+    const {
+      title, description, price, location,
+      availableFrom, amenities, images, roomType, lat, lng,
+    } = req.body;
+
+    // Run fraud detection before saving
+    const fraudResult = await detectFraud(req.user.uid, { title, price, location });
+
+    if (!fraudResult.passed) {
+      return res.status(429).json({
+        error: "Listing blocked by fraud detection.",
+        reason: fraudResult.reason,
+      });
+    }
+
     const now = new Date().toISOString();
 
     const property = {
       title,
       description,
-      price:       parseFloat(price),
+      price:          parseFloat(price),
       location,
       availableFrom,
-      amenities:   amenities || [],
-      images:      images    || [],
-      roomType:    roomType  || "room",
-      lat:         lat       || null,
-      lng:         lng       || null,
-      landlordId:  req.user.uid,
-      isActive:    true,
-      isAvailable: true,
-      createdAt:   now,
-      updatedAt:   now,
+      amenities:      amenities || [],
+      images:         images    || [],
+      roomType:       roomType  || "room",
+      lat:            lat       || null,
+      lng:            lng       || null,
+      landlordId:     req.user.uid,
+      isActive:       true,
+      isAvailable:    true,
+      isFraudChecked: true,
+      createdAt:      now,
+      updatedAt:      now,
     };
 
     const ref = await db.collection("properties").add(property);
@@ -218,4 +218,3 @@ router.delete("/:id", authenticate, requireLandlordOrAdmin, async (req, res, nex
 });
 
 export default router;
-//properties.js
