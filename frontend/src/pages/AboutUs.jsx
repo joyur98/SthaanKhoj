@@ -1,10 +1,58 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ShieldCheck, GraduationCap, Handshake, Zap, Target, Sparkles, Laptop } from "lucide-react"
+import { ShieldCheck, GraduationCap, Handshake, Zap, Target, Sparkles, Laptop, AlertTriangle } from "lucide-react"
+import emailjs from "@emailjs/browser"
 import Navbar from "../components/Navbar"
+
+// EmailJS credentials — same project as the Contact page
+const EMAILJS_SERVICE_ID = "service_e7s7gjm"
+const EMAILJS_TEMPLATE_ID = "template_ihqklni"
+const EMAILJS_PUBLIC_KEY = "fE6DyFIj8B8PPQOBH"
 
 function AboutUs({ darkMode, toggleDarkMode }) {
   const [showPopup, setShowPopup] = useState(false)
+  const [popupForm, setPopupForm] = useState({ name: "", email: "", message: "" })
+  const [popupLoading, setPopupLoading] = useState(false)
+  const [popupError, setPopupError] = useState("")
+  const [popupSent, setPopupSent] = useState(false)
+
+  const handlePopupChange = (e) => {
+    setPopupForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handlePopupSubmit = async (e) => {
+    e.preventDefault()
+    setPopupLoading(true)
+    setPopupError("")
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          name: popupForm.name,
+          email: popupForm.email,
+          subject: "About Us — Quick Message",
+          message: popupForm.message,
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY }
+      )
+      setPopupSent(true)
+    } catch (err) {
+      console.error("EmailJS error:", err)
+      setPopupError("Something went wrong sending your message. Please try again or email us directly.")
+    } finally {
+      setPopupLoading(false)
+    }
+  }
+
+  const closePopup = () => {
+    setShowPopup(false)
+    setPopupSent(false)
+    setPopupError("")
+    setPopupForm({ name: "", email: "", message: "" })
+  }
+
   const values = [
     {
       title: "Trust First",
@@ -184,33 +232,97 @@ function AboutUs({ darkMode, toggleDarkMode }) {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-dark-900 border border-gray-100 dark:border-white/10 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl relative text-left">
             <button 
-              onClick={() => setShowPopup(false)}
+              onClick={closePopup}
               className="absolute top-4 right-4 text-gray-400 hover:text-dark-900 dark:hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h3 className="text-2xl font-bold text-dark-950 dark:text-white mb-2">Send an Email</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Fill out the form below and we'll get back to you shortly.</p>
-            
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowPopup(false); alert('Email sent successfully!'); }}>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Name</label>
-                <input required type="text" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="John Doe" />
+
+            {popupSent ? (
+              <div className="py-6 text-center space-y-3">
+                <div className="w-14 h-14 mx-auto rounded-full bg-[#06D6A0]/10 flex items-center justify-center text-[#06D6A0]">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5m6 1.5a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-dark-950 dark:text-white">Message sent!</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">We'll get back to you within 12 hours.</p>
+                <button
+                  onClick={closePopup}
+                  className="mt-2 text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  Close
+                </button>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Email</label>
-                <input required type="email" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors" placeholder="john@example.com" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Message</label>
-                <textarea required rows="4" className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
-              </div>
-              <button type="submit" className="w-full py-3.5 rounded-full font-bold text-white text-sm bg-[#06D6A0] hover:bg-[#05c490] shadow-md transition-all cursor-pointer">
-                Send Message
-              </button>
-            </form>
+            ) : (
+              <>
+                <h3 className="text-2xl font-bold text-dark-950 dark:text-white mb-2">Send an Email</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+
+                <form className="space-y-4" onSubmit={handlePopupSubmit}>
+                  {popupError && (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-xl text-red-600 dark:text-red-400 text-xs font-semibold">
+                      <AlertTriangle className="w-4 h-4 shrink-0" /> {popupError}
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Name</label>
+                    <input
+                      required
+                      type="text"
+                      name="name"
+                      value={popupForm.name}
+                      onChange={handlePopupChange}
+                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Your Email</label>
+                    <input
+                      required
+                      type="email"
+                      name="email"
+                      value={popupForm.email}
+                      onChange={handlePopupChange}
+                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Message</label>
+                    <textarea
+                      required
+                      rows="4"
+                      name="message"
+                      value={popupForm.message}
+                      onChange={handlePopupChange}
+                      className="w-full bg-gray-50 dark:bg-dark-950 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-primary-500 transition-colors resize-none"
+                      placeholder="How can we help you?"
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={popupLoading}
+                    className="w-full py-3.5 rounded-full font-bold text-white text-sm bg-[#06D6A0] hover:bg-[#05c490] shadow-md transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {popupLoading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        Sending…
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
