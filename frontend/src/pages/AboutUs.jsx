@@ -157,14 +157,14 @@ function AboutUs({ darkMode, toggleDarkMode }) {
 
             <div className="space-y-4 mt-8 relative z-10">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-white-400 uppercase tracking-widest">
                   Direct Inquiries
                 </span>
                 <a
                   href="mailto:info@sthaankhoj.com"
                   className="text-base sm:text-lg font-bold text-primary-400 hover:text-primary-300 transition break-all"
                 >
-                  info@sthaankhoj.com
+                  sthaankhoj@gmail.com
                 </a>
               </div>
 

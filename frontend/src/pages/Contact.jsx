@@ -1,24 +1,50 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react"
+import { Mail, MapPin, Clock, Send, CheckCircle2, AlertTriangle } from "lucide-react"
+import emailjs from "@emailjs/browser"
 import Navbar from "../components/Navbar"
+
+// EmailJS credentials — from your EmailJS dashboard
+// (fine to hardcode; EmailJS public key is meant to be used client-side,
+// but you can also move these into .env as VITE_ vars if you prefer)
+const EMAILJS_SERVICE_ID = "service_e7s7gjm"
+const EMAILJS_TEMPLATE_ID = "template_ihqklni"
+const EMAILJS_PUBLIC_KEY = "fE6DyFIj8B8PPQOBH"
 
 function ContactUs({ darkMode, toggleDarkMode }) {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" })
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    setError("")
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY }
+      )
       setSubmitted(true)
-    }, 1200)
+    } catch (err) {
+      console.error("EmailJS error:", err)
+      setError("Something went wrong sending your message. Please try again or email us directly.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const contactMethods = [
@@ -168,6 +194,12 @@ function ContactUs({ darkMode, toggleDarkMode }) {
               </div>
             ) : (
               <form className="space-y-5 flex-1 flex flex-col" onSubmit={handleSubmit}>
+                {error && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-xl text-red-600 dark:text-red-400 text-xs font-semibold">
+                    <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5">Your Name</label>
