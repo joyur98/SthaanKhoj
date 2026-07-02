@@ -1,7 +1,42 @@
+import { useEffect, useState } from "react"
 import { BadgeCheck, Star } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { getProperties } from "../services/api"
 import heroImg from "../assets/hero.png"
 
 function Hero() {
+  const navigate = useNavigate()
+  const [rooms, setRooms] = useState([])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchFeatured = async () => {
+      try {
+        const res = await getProperties({})
+        if (!isMounted) return
+        // Only keep listings that actually have a photo, take the first 3
+        const withImages = (res.data || []).filter((r) => r.images?.[0])
+        setRooms(withImages.slice(0, 3))
+      } catch (err) {
+        console.error("Could not load featured rooms:", err.message)
+      }
+    }
+
+    fetchFeatured()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Fall back to the static image if we don't have a real photo for that slot yet
+  const img1 = rooms[0]?.images?.[0] || heroImg
+  const img2 = rooms[1]?.images?.[0] || heroImg
+  const img3 = rooms[2]?.images?.[0] || heroImg
+
+  // Use the first featured room's rating/id for the badge + click-through, if available
+  const featuredRoom = rooms[0]
+
   return (
     <section className="bg-[#FBF7F0] dark:bg-[#111827] transition-colors duration-300 pt-32 pb-0 lg:pt-40 lg:pb-0">
       <div className="max-w-7xl mx-auto px-6 md:px-12 w-full">
@@ -67,10 +102,13 @@ function Hero() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-[#9feadd] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] -z-10" />
 
             {/* Left large polaroid */}
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[260px] h-[340px] bg-white p-3 pb-10 rounded-xl shadow-xl -rotate-6 z-10 transition-transform hover:rotate-0 hover:z-50 duration-300">
+            <div
+              onClick={() => featuredRoom && navigate(`/rooms/${featuredRoom.id}`)}
+              className={`absolute top-1/2 left-0 -translate-y-1/2 w-[260px] h-[340px] bg-white p-3 pb-10 rounded-xl shadow-xl -rotate-6 z-10 transition-transform hover:rotate-0 hover:z-50 duration-300 ${featuredRoom ? "cursor-pointer" : ""}`}
+            >
               <img
-                src={heroImg}
-                alt="Cozy bedroom"
+                src={img1}
+                alt={rooms[0]?.title || "Cozy bedroom"}
                 className="w-full h-full object-cover rounded-md"
               />
               {/* Coral Rating Badge overlapping the polaroid */}
@@ -81,20 +119,26 @@ function Hero() {
             </div>
 
             {/* Top right polaroid */}
-            <div className="absolute top-4 right-0 w-[240px] h-[220px] bg-white p-3 pb-10 rounded-xl shadow-xl rotate-6 z-20 transition-transform hover:rotate-0 hover:z-50 duration-300">
+            <div
+              onClick={() => rooms[1] && navigate(`/rooms/${rooms[1].id}`)}
+              className={`absolute top-4 right-0 w-[240px] h-[220px] bg-white p-3 pb-10 rounded-xl shadow-xl rotate-6 z-20 transition-transform hover:rotate-0 hover:z-50 duration-300 ${rooms[1] ? "cursor-pointer" : ""}`}
+            >
               <img
-                src={heroImg}
-                alt="Study area"
+                src={img2}
+                alt={rooms[1]?.title || "Study area"}
                 className="w-full h-full object-cover rounded-md object-center"
                 style={{ objectPosition: "50% 30%" }}
               />
             </div>
 
             {/* Bottom right polaroid */}
-            <div className="absolute bottom-4 right-4 w-[260px] h-[200px] bg-white p-3 pb-10 rounded-xl shadow-xl -rotate-2 z-30 transition-transform hover:rotate-0 hover:z-50 duration-300">
+            <div
+              onClick={() => rooms[2] && navigate(`/rooms/${rooms[2].id}`)}
+              className={`absolute bottom-4 right-4 w-[260px] h-[200px] bg-white p-3 pb-10 rounded-xl shadow-xl -rotate-2 z-30 transition-transform hover:rotate-0 hover:z-50 duration-300 ${rooms[2] ? "cursor-pointer" : ""}`}
+            >
               <img
-                src={heroImg}
-                alt="Living space"
+                src={img3}
+                alt={rooms[2]?.title || "Living space"}
                 className="w-full h-full object-cover rounded-md"
                 style={{ objectPosition: "50% 70%" }}
               />
