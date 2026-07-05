@@ -2,11 +2,15 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import { getMyLandlordProfile, updateLandlordProfile, getMyProperties } from "../services/api"
+import { getLandlordBookings, updateBookingStatus } from "../services/bookingService"
 
 function LandlordProfile({ darkMode, toggleDarkMode }) {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [properties, setProperties] = useState([])
+  const [bookings, setBookings] = useState([])
+  const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [respondingId, setRespondingId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [phone, setPhone] = useState("")
@@ -28,6 +32,34 @@ function LandlordProfile({ darkMode, toggleDarkMode }) {
     load()
   }, [])
 
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        const data = await getLandlordBookings()
+        setBookings(data || [])
+      } catch (err) {
+        console.error("Failed to load booking requests:", err)
+      } finally {
+        setBookingsLoading(false)
+      }
+    }
+    loadBookings()
+  }, [])
+
+  const handleRespond = async (bookingId, status) => {
+    setRespondingId(bookingId)
+    try {
+      await updateBookingStatus(bookingId, status)
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status } : b))
+      )
+    } catch (err) {
+      console.error("Failed to update booking:", err)
+    } finally {
+      setRespondingId(null)
+    }
+  }
+
   const handleSavePhone = async () => {
     setSaving(true)
     setSaveMsg("")
@@ -41,6 +73,9 @@ function LandlordProfile({ darkMode, toggleDarkMode }) {
       setSaving(false)
     }
   }
+
+  const pendingBookings = bookings.filter((b) => b.status === "pending")
+  const otherBookings = bookings.filter((b) => b.status !== "pending")
 
   if (loading) return (
     <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-[#fafbfc] dark:bg-[#0b1528]`}>
@@ -128,6 +163,86 @@ function LandlordProfile({ darkMode, toggleDarkMode }) {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Booking Requests */}
+        <div>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-primary-500">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+              Booking Requests
+              {pendingBookings.length > 0 && (
+                <span className="text-xs font-bold text-white bg-[#FF6B47] px-2.5 py-1 rounded-full">
+                  {pendingBookings.length} new
+                </span>
+              )}
+            </h2>
+          </div>
+
+          {bookingsLoading ? (
+            <div className="text-center py-10 bg-white dark:bg-dark-900/60 border border-gray-100 dark:border-white/10 rounded-3xl">
+              <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="text-center py-12 bg-white dark:bg-dark-900/60 border border-gray-100 dark:border-white/10 rounded-3xl">
+              <p className="text-3xl mb-3">📭</p>
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">No booking requests yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {[...pendingBookings, ...otherBookings].map((booking) => (
+                <div
+                  key={booking.id}
+                  className="bg-white dark:bg-dark-900/60 border border-gray-100 dark:border-white/10 rounded-2xl p-5"
+                >
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                          booking.status === "pending"
+                            ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40"
+                            : booking.status === "accepted"
+                            ? "bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900/30"
+                            : "bg-red-50 dark:bg-red-950/30 text-red-500 border border-red-100 dark:border-red-900/30"
+                        }`}>
+                          {booking.status}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          Move-in: {booking.startDate}
+                        </span>
+                      </div>
+                      {booking.message && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                          "{booking.message}"
+                        </p>
+                      )}
+                    </div>
+
+                    {booking.status === "pending" && (
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => handleRespond(booking.id, "rejected")}
+                          disabled={respondingId === booking.id}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-all disabled:opacity-50"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => handleRespond(booking.id, "accepted")}
+                          disabled={respondingId === booking.id}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 shadow-sm transition-all disabled:opacity-50"
+                        >
+                          {respondingId === booking.id ? "..." : "Accept"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Posted Rooms */}

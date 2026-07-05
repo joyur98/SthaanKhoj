@@ -146,4 +146,4 @@ export default function BookingModal({ room, onClose, onSubmit }) {
       </div>
     </div>
   )
-}
+}//BookingModal.jsx
