@@ -6,8 +6,10 @@ import { ViewLocationMap } from "../components/RoomMap"
 import { useAuth } from "../context/AuthContext"
 import { getOrCreateChat } from "../services/chatService"
 import ReviewSection from "../components/ReviewSection"
+import BookingModal from "../components/BookingModal"
+import { createBooking, getStudentBookings } from "../services/bookingService"
 
-const KU_LAT = 27.620532425085997 
+const KU_LAT = 27.620532425085997
 const KU_LNG = 85.53841251986667
 
 const getDistanceFromKU = (lat, lng) => {
@@ -36,12 +38,27 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   const [activeImg, setActiveImg] = useState(0)
   const [chatLoading, setChatLoading] = useState(false)
 
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [bookingError, setBookingError] = useState("")
+  const [hasPendingBooking, setHasPendingBooking] = useState(false)
+
   useEffect(() => {
     getProperty(id)
       .then((data) => setRoom(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (!user) return
+    getStudentBookings(user.uid).then((bookings) => {
+      const pending = bookings.some(
+        (b) => b.propertyId === id && b.status === "pending"
+      )
+      setHasPendingBooking(pending)
+    })
+  }, [user, id])
 
   const handleContactLandlord = async () => {
     if (!user || !room) return
@@ -60,6 +77,32 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
       console.error("getOrCreateChat error:", err)
     } finally {
       setChatLoading(false)
+    }
+  }
+
+  const handleRequestBookingClick = () => {
+    if (!user) {
+      navigate("/login")
+      return
+    }
+    setShowBookingModal(true)
+  }
+
+  const handleBookingSubmit = async ({ startDate, endDate, message }) => {
+    if (!user || !room) return
+    setBookingError("")
+    try {
+      await createBooking(
+        { roomId: id, startDate, endDate, message },
+        user.uid,
+        user.displayName || user.email || "A student"
+      )
+      setShowBookingModal(false)
+      setBookingSuccess(true)
+      setHasPendingBooking(true)
+    } catch (err) {
+      setBookingError(err.message || "Failed to submit booking request.")
+      throw err
     }
   }
 
@@ -216,8 +259,12 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     </p>
 
                     <div className="mt-6 space-y-3">
-                      <button className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300">
-                        Request Booking
+                      <button
+                        onClick={handleRequestBookingClick}
+                        disabled={hasPendingBooking}
+                        className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {hasPendingBooking ? "Request Pending" : "Request Booking"}
                       </button>
                       <button
                         onClick={handleContactLandlord}
@@ -234,6 +281,32 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
             </div>
           )}
         </div>
+
+        {showBookingModal && (
+          <BookingModal
+            room={room}
+            onClose={() => setShowBookingModal(false)}
+            onSubmit={handleBookingSubmit}
+          />
+        )}
+
+        {bookingSuccess && (
+          <div className="fixed bottom-6 right-6 z-50 px-5 py-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/40 rounded-2xl text-green-700 dark:text-green-400 text-sm font-semibold shadow-lg flex items-center gap-3">
+            ✓ Booking request sent!
+            <button onClick={() => setBookingSuccess(false)} className="underline">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {bookingError && !showBookingModal && (
+          <div className="fixed bottom-6 right-6 z-50 px-5 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-2xl text-red-600 dark:text-red-400 text-sm font-semibold shadow-lg flex items-center gap-3">
+            ⚠ {bookingError}
+            <button onClick={() => setBookingError("")} className="underline">
+              Dismiss
+            </button>
+          </div>
+        )}
       </section>
     </div>
   )

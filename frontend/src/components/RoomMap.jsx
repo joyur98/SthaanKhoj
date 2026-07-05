@@ -106,9 +106,32 @@ function RouteFromKU({ lat, lng }) {
       createMarker: () => null,
     }).addTo(map)
 
-    return () => {
-      map.removeControl(routingControl)
+    // Guard against a known leaflet-routing-machine bug: if an in-flight
+    // OSRM response resolves after this control has already been removed
+    // (e.g. React StrictMode's dev-mode double mount/unmount), the library
+    // tries to clear route lines that no longer exist and throws. We make
+    // that cleanup safe instead of letting it crash.
+    const originalClearLines = routingControl._clearLines.bind(routingControl)
+    routingControl._clearLines = function (...args) {
+      try {
+        originalClearLines(...args)
+      } catch (err) {
+        // Route lines were already removed — safe to ignore.
+      }
     }
+
+    let removed = false
+    const safeRemove = () => {
+      if (removed) return
+      removed = true
+      try {
+        map.removeControl(routingControl)
+      } catch (err) {
+        // Control may already be detached — safe to ignore.
+      }
+    }
+
+    return safeRemove
   }, [map, lat, lng])
 
   return null

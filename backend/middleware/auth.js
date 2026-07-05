@@ -17,9 +17,23 @@ export const authenticate = async (req, res, next) => {
     // Attach decoded token (contains uid, email, custom claims like role)
     req.user = decoded;
 
-    // Optionally attach the Firestore profile
-    const snap = await db.collection("users").doc(decoded.uid).get();
-    if (snap.exists) req.userDoc = snap.data();
+    // Try the users/{uid} doc first (may hold role for some accounts)
+    const userSnap = await db.collection("users").doc(decoded.uid).get();
+    if (userSnap.exists) req.userDoc = userSnap.data();
+
+    // Fallback: resolve role directly from students/{uid} or landlords/{uid}
+    // since that's where role actually lives for most accounts in this app.
+    if (!req.user.role && !req.userDoc?.role) {
+      const studentSnap = await db.collection("students").doc(decoded.uid).get();
+      if (studentSnap.exists) {
+        req.resolvedRole = studentSnap.data().role || "student";
+      } else {
+        const landlordSnap = await db.collection("landlords").doc(decoded.uid).get();
+        if (landlordSnap.exists) {
+          req.resolvedRole = landlordSnap.data().role || "landlord";
+        }
+      }
+    }
 
     next();
   } catch (err) {
@@ -35,7 +49,7 @@ export const authenticate = async (req, res, next) => {
 export const requireRole = (...roles) => {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: "Unauthenticated." });
-    const userRole = req.user.role || req.userDoc?.role;
+    const userRole = req.user.role || req.userDoc?.role || req.resolvedRole;
     if (!roles.includes(userRole)) {
       return res.status(403).json({ error: "You do not have permission for this action." });
     }
@@ -48,4 +62,3 @@ export const requireLandlord = requireRole("landlord");
 export const requireAdmin    = requireRole("admin");
 export const requireLandlordOrAdmin = requireRole("landlord", "admin");
 export const requireAnyRole  = requireRole("student", "landlord", "admin");
-//auth.js

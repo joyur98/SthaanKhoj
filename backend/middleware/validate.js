@@ -28,11 +28,14 @@ export const propertyRules = [
 
 export const bookingRules = [
   body("propertyId").trim().notEmpty(),
-  body("startDate").isISO8601(),
-  body("endDate").isISO8601(),
+  body("startDate").isISO8601().withMessage("startDate must be a valid date."),
+  body("endDate")
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601()
+    .withMessage("endDate must be a valid date if provided."),
 ];
 
 export const paginationRules = [
   query("limit").optional().isInt({ min: 1, max: 50 }),
   query("page").optional().isInt({ min: 1 }),
-];//validate.js
+];
