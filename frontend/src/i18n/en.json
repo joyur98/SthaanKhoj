@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "home": "Home",
+    "findRooms": "Find Rooms",
+    "messages": "Messages",
+    "favorites": "Favorites",
+    "analytics": "Analytics",
+    "about": "About Us",
+    "contact": "Contact",
+    "postRoom": "Post Room",
+    "login": "Log In / Sign Up",
+    "logout": "Log Out",
+    "register": "Register"
+  },
+  "common": {
+    "search": "Search",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading..."
+  }
+}

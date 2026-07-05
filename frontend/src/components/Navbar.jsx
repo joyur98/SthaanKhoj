@@ -3,6 +3,7 @@ import logo2 from "../assets/logo2.png"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { listenToUnreadCount } from "../services/chatService"
+import { useTranslation } from "react-i18next"
 
 
 function Navbar({ darkMode, toggleDarkMode }) {
@@ -10,6 +11,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
 
+  const { t, i18n } = useTranslation()
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -31,13 +33,13 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
 
   const navLinks = [
-    { name: "Home", path: "/home" },
-    { name: "Find Rooms", path: "/find-rooms" },
-    { name: "Messages", path: "/messages", badge: unreadCount },
-    { name: "Favorites", path: "/favorites" },
-    { name: "Analytics", path: "/analytics" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { key: "home", name: t("nav.home"), path: "/home" },
+    { key: "findRooms", name: t("nav.findRooms"), path: "/find-rooms" },
+    { key: "messages", name: t("nav.messages"), path: "/messages", badge: unreadCount },
+    { key: "favorites", name: t("nav.favorites"), path: "/favorites" },
+    { key: "analytics", name: t("nav.analytics"), path: "/analytics" },
+    { key: "about", name: t("nav.about"), path: "/about" },
+    { key: "contact", name: t("nav.contact"), path: "/contact" },
   ]
 
 
@@ -51,6 +53,11 @@ function Navbar({ darkMode, toggleDarkMode }) {
     } catch (error) {
       console.error("Logout failed:", error)
     }
+  }
+
+  const toggleLang = () => {
+    const next = i18n.language === "en" ? "ne" : "en"
+    i18n.changeLanguage(next)
   }
 
 
@@ -97,7 +104,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           <div className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.key}
                 to={link.path}
                 className={`relative px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-200 ${
                   isActive(link.path)
@@ -124,6 +131,14 @@ function Navbar({ darkMode, toggleDarkMode }) {
           {/* ── Desktop Controls ─────────────────────────────────────── */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
 
+            {/* Language toggle — outline pill */}
+            <button
+              onClick={toggleLang}
+              aria-label="Toggle language"
+              className="px-3 py-1.5 text-xs font-bold rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#06D6A0] hover:text-[#06D6A0] transition-all duration-200"
+            >
+              {i18n.language === "en" ? "🇳🇵 ने" : "🇬🇧 EN"}
+            </button>
 
             {/* Theme toggle — outline pill */}
             <button
@@ -163,7 +178,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 to="/post-room"
                 className="px-4 py-2 rounded-full text-[13px] font-semibold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-[0_4px_12px_rgba(6,214,160,0.3)] hover:shadow-[0_6px_16px_rgba(6,214,160,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
               >
-                Post Room
+                {t("nav.postRoom")}
               </Link>
             )}
 
@@ -174,14 +189,14 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 onClick={handleLogout}
                 className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-[#FF6B47] hover:bg-[#f55a35] shadow-[0_4px_12px_rgba(255,107,71,0.3)] hover:shadow-[0_6px_16px_rgba(255,107,71,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
-                Log Out
+                {t("nav.logout")}
               </button>
             ) : (
               <Link
                 to="/login"
                 className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-[#FF6B47] hover:bg-[#f55a35] shadow-[0_4px_12px_rgba(255,107,71,0.3)] hover:shadow-[0_6px_16px_rgba(255,107,71,0.4)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
-                Log In / Sign Up
+                {t("nav.login")}
               </Link>
             )}
           </div>
@@ -248,7 +263,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           <div className="flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.key}
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`relative flex items-center justify-between py-3 px-4 rounded-2xl text-sm font-semibold transition-all ${
@@ -272,9 +287,9 @@ function Navbar({ darkMode, toggleDarkMode }) {
         </div>
 
 
-        {/* Drawer bottom: theme + actions */}
+        {/* Drawer bottom: theme + language + actions */}
         <div className="space-y-3 pt-6 border-t border-gray-100 dark:border-white/10">
-          <div className="flex items-center justify-between px-1 mb-4">
+          <div className="flex items-center justify-between px-1 mb-2">
             <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
               {darkMode ? "Dark Mode" : "Light Mode"}
             </span>
@@ -287,6 +302,19 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </button>
           </div>
 
+          <div className="flex items-center justify-between px-1 mb-4">
+            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+              Language
+            </span>
+            <button
+              onClick={toggleLang}
+              aria-label="Toggle language"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-900 dark:bg-gray-700 text-white text-xs font-semibold transition-all"
+            >
+              {i18n.language === "en" ? "🇳🇵 ने" : "🇬🇧 EN"}
+            </button>
+          </div>
+
 
           {role === "landlord" && (
             <Link
@@ -294,7 +322,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full py-3 rounded-2xl text-sm font-bold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-md text-center transition-all"
             >
-              Post a Room
+              {t("nav.postRoom")}
             </Link>
           )}
 
@@ -307,7 +335,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
               </svg>
-              Log Out
+              {t("nav.logout")}
             </button>
           )}
         </div>

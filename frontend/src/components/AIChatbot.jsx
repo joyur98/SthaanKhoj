@@ -26,6 +26,12 @@ function AIChatbot({ darkMode }) {
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [hasUnread, setHasUnread] = useState(false)
+
+  // ── Voice search state ────────────────────────────────────────────────
+  const [isListening, setIsListening] = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(false)
+  const recognitionRef = useRef(null)
+
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const navigate = useNavigate()
@@ -101,6 +107,83 @@ function AIChatbot({ darkMode }) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  // ── Voice search setup ────────────────────────────────────────────────
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setVoiceSupported(false)
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang = "en-US" // swap to "ne-NP" later for Nepali support
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event) => {
+      let transcript = ""
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
+      }
+      setInput(transcript)
+
+      // If it's a final result, auto-send
+      if (event.results[event.results.length - 1].isFinal) {
+        handleSend(transcript)
+        setIsListening(false)
+      }
+    }
+
+    recognition.onerror = (event) => {
+      setIsListening(false)
+      if (event.error === "not-allowed" || event.error === "permission-denied") {
+        addMessage({
+          role: "bot",
+          text: "I need microphone access to hear you 🎤. Please allow mic permission and try again.",
+          suggestions: ["Help"],
+        })
+      } else if (event.error === "no-speech") {
+        addMessage({
+          role: "bot",
+          text: "I didn't catch that 🤔. Try speaking again after tapping the mic.",
+          suggestions: [],
+        })
+      }
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognitionRef.current = recognition
+    setVoiceSupported(true)
+
+    return () => {
+      recognition.onresult = null
+      recognition.onerror = null
+      recognition.onend = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      setInput("")
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch (err) {
+        // start() throws if called while already active — ignore
+      }
     }
   }
 
@@ -332,13 +415,28 @@ function AIChatbot({ darkMode }) {
           {/* ── Input ─────────────────────────────────────────────── */}
           <div className="shrink-0 px-4 py-3 border-t border-gray-100/80 dark:border-white/[0.06] bg-gray-50/50 dark:bg-white/[0.02]">
             <div className="flex items-center gap-2">
+              {voiceSupported && (
+                <button
+                  onClick={toggleListening}
+                  className={`p-2.5 rounded-xl transition-all duration-300 shrink-0 ${
+                    isListening
+                      ? "bg-red-500 text-white animate-pulse shadow-[0_4px_14px_rgba(239,68,68,0.35)]"
+                      : "bg-white dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-primary-400 dark:hover:border-primary-600 hover:text-primary-600"
+                  }`}
+                  aria-label={isListening ? "Stop listening" : "Start voice search"}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                  </svg>
+                </button>
+              )}
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder='Try "rooms in Dhulikhel under 10K"'
+                placeholder={isListening ? "Listening... 🎤" : 'Try "rooms in Dhulikhel under 10K"'}
                 className="flex-1 px-4 py-2.5 text-sm bg-white dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-400/50 dark:focus:ring-primary-500/40 transition-all duration-200"
               />
               <button
