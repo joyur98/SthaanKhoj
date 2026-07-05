@@ -3,6 +3,7 @@ import { db } from "../firebase/firebaseAdmin.js";
 import { authenticate, requireLandlord, requireAdmin, requireLandlordOrAdmin } from "../middleware/auth.js";
 import { propertyRules, paginationRules, validate } from "../middleware/validate.js";
 import { detectFraud } from "../middleware/fraudDetection.js";
+import { sendRoomNotification } from "../services/notifications.js";
 
 const router = Router();
 
@@ -169,6 +170,13 @@ router.post("/", authenticate, requireLandlord, propertyRules, validate, async (
     const landlordSnap = await landlordRef.get();
     const existing     = landlordSnap.data()?.properties || [];
     await landlordRef.update({ properties: [...existing, ref.id], updatedAt: now });
+
+    // Send Discord notification (non-blocking — failure won't affect room creation)
+    try {
+      await sendRoomNotification({ id: ref.id, ...property });
+    } catch (discordErr) {
+      console.error("Discord notification failed:", discordErr.message);
+    }
 
     res.status(201).json({ id: ref.id, ...property });
   } catch (err) {
