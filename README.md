@@ -1,2 +1,3 @@
-# SthaanKhoj
-A project for the second year second sem
+Sthaankhoj - Room Finder Near Kathmandu University
+
+Sthaankhoj is a comprehensive digital platform designed to simplify the room-hunting experience for students and tenants near Kathmandu University. Our platform bridges the gap between landlords and students by providing a secure, intuitive, and feature-rich marketplace where property listings, real-time availability, price analytics, and direct communication channels come together seamlessly. With integrated AI-powered chatbot assistance, multilingual support (English/Nepali), robust fraud detection mechanisms, and an interactive room mapping system, Sthaankhoj ensures that finding the perfect accommodation is no longer a stressful ordeal but a streamlined, transparent, and efficient process. Whether you're a student searching for your first room or a landlord looking to list your property, Sthaankhoj offers a trusted ecosystem that prioritizes safety, convenience, and accessibility for the entire Kathmandu University community.
