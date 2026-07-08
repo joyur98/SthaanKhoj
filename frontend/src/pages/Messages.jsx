@@ -343,7 +343,7 @@ function ConversationCard({
                     : "font-semibold text-gray-600 dark:text-gray-300"
                 }`}
               >
-                {other?.fullName || "Loading..."}
+                {other?.fullName || "Unknown user"}
               </p>
               {other?.role && (
                 <span
@@ -472,7 +472,7 @@ function DetailPanel({ chat, other, onClose, ChatPanelComponent }) {
           </div>
           <div className="min-w-0">
             <p className="font-bold text-gray-900 dark:text-white text-sm truncate">
-              {other?.fullName || "Loading..."}
+              {other?.fullName || "Unknown user"}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
               {formatLastActive(other?.lastActive, other?.online)}
@@ -541,16 +541,29 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
         setChats(chatList)
         setLoading(false)
 
+        // Fetch each "other user" profile independently. A single blocked or
+        // failing read (e.g. a Firestore rule preventing cross-user reads)
+        // must NOT take down the whole batch — previously this used a bare
+        // Promise.all, so one rejected getDoc() rejected the entire promise
+        // and setOtherUsers() was never called, leaving every card stuck on
+        // "Loading...".
         const userMap = {}
-        await Promise.all(
-          chatList.map(async (chat) => {
-            const otherId = role === "student" ? chat.landlordId : chat.studentId
-            if (!otherId || userMap[otherId]) return
+        const uniqueOtherIds = [
+          ...new Set(
+            chatList
+              .map((chat) => (role === "student" ? chat.landlordId : chat.studentId))
+              .filter(Boolean)
+          ),
+        ]
+
+        await Promise.allSettled(
+          uniqueOtherIds.map(async (otherId) => {
             const snap = await getDoc(doc(db, "users", otherId))
             if (snap.exists()) userMap[otherId] = snap.data()
           })
         )
-        setOtherUsers(userMap)
+
+        setOtherUsers((prev) => ({ ...prev, ...userMap }))
       },
       (err) => {
         console.error(err)
