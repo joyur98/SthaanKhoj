@@ -201,3 +201,15 @@
 .leaflet-bar a.leaflet-routing-icon {
   display: none !important;
 }
+
+/* ── Leaflet Z-Index and Overlap Fixes ── */
+.leaflet-container {
+  z-index: 1 !important;
+}
+.leaflet-pane {
+  z-index: 2 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 3 !important;
+}

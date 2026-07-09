@@ -26,6 +26,9 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
+    // Filter out properties that are not available (booked/occupied)
+    properties = properties.filter((p) => p.isAvailable !== false);
+
     if (minPrice) {
       const min = parseFloat(minPrice);
       properties = properties.filter((p) => p.price >= min);
@@ -66,6 +69,9 @@ router.post("/chatbot-search", async (req, res, next) => {
 
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // Filter out properties that are not available (booked/occupied)
+    properties = properties.filter((p) => p.isAvailable !== false);
 
     if (minPrice) {
       const min = parseFloat(minPrice);

@@ -3,16 +3,12 @@ import { useNavigate, useParams } from "react-router-dom"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import {
   Search,
-  Filter,
   Pin,
   PinOff,
   Archive,
   CheckCheck,
-  Circle,
   MapPin,
   Image as ImageIcon,
-  X,
-  ChevronRight,
   MoreVertical,
   Trash2,
   Mail,
@@ -23,13 +19,12 @@ import { listenToChats } from "../services/chatService"
 import Navbar from "../components/Navbar"
 import { db } from "../firebase"
 import { doc, getDoc } from "firebase/firestore"
+import ChatPanel from "../components/ChatPanel"
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-// A small, fixed palette of gradient pairs. Deterministic per-name so a given
-// person always gets the same avatar treatment across sessions.
 const AVATAR_GRADIENTS = [
   ["#FF6B47", "#FFB199"], // terracotta
   ["#0EA5A0", "#67E8DE"], // teal
@@ -89,7 +84,7 @@ function formatLastActive(timestamp, isOnline) {
 
   if (diff < 60000) return "Active moments ago"
   if (diff < 3600000) return `Active ${Math.floor(diff / 60000)}m ago`
-  if (diff < 86400000) return `Active ${Math.floor(diff / 3600000)}h ago`
+  if (diff < 86400000) return `Active ${Math.floor(diff / 3600050)}h ago`
   return `Active ${Math.floor(diff / 86400000)}d ago`
 }
 
@@ -131,12 +126,12 @@ function ConversationSkeleton() {
 /*  Empty state                                                               */
 /* -------------------------------------------------------------------------- */
 
-function EmptyState({ role, onBrowse, hasFilters, onClearFilters }) {
+function EmptyState({ role, onBrowse, hasFilters, onClearFilters, viewTab }) {
   const reduceMotion = useReducedMotion()
 
   if (hasFilters) {
     return (
-      <div className="text-center py-24 px-6">
+      <div className="text-center py-24 px-6 bg-white dark:bg-gray-800 rounded-[28px] border border-black/[0.02] dark:border-white/[0.04]">
         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center">
           <Search className="w-7 h-7 text-gray-300 dark:text-gray-600" />
         </div>
@@ -146,7 +141,7 @@ function EmptyState({ role, onBrowse, hasFilters, onClearFilters }) {
         </p>
         <button
           onClick={onClearFilters}
-          className="px-5 py-2 rounded-full text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+          className="px-5 py-2.5 rounded-full text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
         >
           Clear filters
         </button>
@@ -155,45 +150,43 @@ function EmptyState({ role, onBrowse, hasFilters, onClearFilters }) {
   }
 
   return (
-    <div className="text-center py-20 px-6">
+    <div className="text-center py-20 px-6 bg-white dark:bg-gray-800 rounded-[28px] border border-black/[0.02] dark:border-white/[0.04]">
       <motion.div
         initial={reduceMotion ? false : { scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 16 }}
-        className="relative w-24 h-24 mx-auto mb-6"
+        className="relative w-20 h-20 mx-auto mb-6 animate-bounce"
       >
         <div
-          className="absolute inset-0 rounded-[28px] opacity-90"
+          className="absolute inset-0 rounded-[24px] opacity-90"
           style={{ background: "linear-gradient(135deg, #FF6B47 0%, #FFB199 100%)" }}
         />
-        <motion.div
-          animate={reduceMotion ? {} : { y: [0, -4, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 flex items-center justify-center text-4xl"
-        >
+        <div className="absolute inset-0 flex items-center justify-center text-3xl">
           💬
-        </motion.div>
+        </div>
       </motion.div>
 
       <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-1.5">
-        {role === "student" ? "No conversations yet" : "Your inbox is empty"}
+        {viewTab === "archived" 
+          ? "No archived chats" 
+          : role === "student" 
+            ? "No conversations yet" 
+            : "Your inbox is empty"
+        }
       </h2>
       <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs mx-auto mb-6">
-        {role === "student"
-          ? "Message a landlord from any room listing to start planning your move near Kathmandu University."
-          : "When students reach out about your rooms, their messages will show up here."}
+        {viewTab === "archived"
+          ? "Chats you archive will show up here. You can unarchive them anytime."
+          : role === "student"
+            ? "Message a landlord from any room listing to start planning your move near Kathmandu University."
+            : "When students reach out about your rooms, their messages will show up here."}
       </p>
 
-      {role === "student" && (
+      {role === "student" && viewTab !== "archived" && (
         <motion.button
           onClick={onBrowse}
-          animate={reduceMotion ? {} : { boxShadow: [
-            "0 4px 12px rgba(255,107,71,0.20)",
-            "0 4px 20px rgba(255,107,71,0.40)",
-            "0 4px 12px rgba(255,107,71,0.20)",
-          ] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-          className="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-[#FF6B47] hover:bg-[#f55a35] transition-colors"
+          whileTap={{ scale: 0.95 }}
+          className="px-6 py-3 rounded-full text-sm font-extrabold text-white bg-[#FF6B47] hover:bg-[#f55a35] shadow-[0_4px_14px_rgba(255,107,71,0.3)] transition-all hover:-translate-y-0.5 active:translate-y-0"
         >
           Browse rooms
         </motion.button>
@@ -206,8 +199,6 @@ function EmptyState({ role, onBrowse, hasFilters, onClearFilters }) {
 /*  Conversation card                                                          */
 /* -------------------------------------------------------------------------- */
 
-const SWIPE_ACTION_WIDTH = 144
-
 function ConversationCard({
   chat,
   other,
@@ -217,10 +208,12 @@ function ConversationCard({
   isPinned,
   isChecked,
   selectMode,
+  isArchived,
   onOpen,
   onTogglePin,
   onToggleRead,
   onArchive,
+  onUnarchive,
   onToggleCheck,
   index,
 }) {
@@ -228,8 +221,12 @@ function ConversationCard({
   const isOnline = other?.online === true
   const propertyImage = chat.propertyImage
   const lastAttachment = chat.lastMessageType // "image" | "location" | undefined
-  const dragX = useRef(0)
-  const [swiped, setSwiped] = useState(false)
+
+  const handleAction = (e, callback) => {
+    e.stopPropagation()
+    e.preventDefault()
+    callback()
+  }
 
   return (
     <motion.div
@@ -237,62 +234,27 @@ function ConversationCard({
       initial={reduceMotion ? false : { opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: reduceMotion ? 0 : Math.min(index * 0.04, 0.3), type: "spring", stiffness: 260, damping: 24 }}
-      className="relative"
+      className="relative group"
     >
-      {/* Swipe / hover action tray, revealed behind the card */}
-      <div className="absolute inset-y-0 right-0 flex items-stretch rounded-r-[22px] overflow-hidden">
-        <button
-          onClick={() => onTogglePin(chat.id)}
-          aria-label={isPinned ? "Unpin conversation" : "Pin conversation"}
-          className="w-12 flex items-center justify-center bg-amber-400 text-white hover:bg-amber-500 transition-colors"
-        >
-          {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-        </button>
-        <button
-          onClick={() => onToggleRead(chat.id)}
-          aria-label={unread > 0 ? "Mark as read" : "Mark as unread"}
-          className="w-12 flex items-center justify-center bg-primary-500 text-white hover:bg-primary-600 transition-colors"
-        >
-          {unread > 0 ? <MailOpen className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
-        </button>
-        <button
-          onClick={() => onArchive(chat.id)}
-          aria-label="Archive conversation"
-          className="w-12 flex items-center justify-center bg-gray-700 text-white hover:bg-gray-800 transition-colors"
-        >
-          <Archive className="w-4 h-4" />
-        </button>
-      </div>
-
-      <motion.button
-        drag={reduceMotion ? false : "x"}
-        dragConstraints={{ left: -SWIPE_ACTION_WIDTH, right: 0 }}
-        dragElastic={0.05}
-        onDragEnd={(_, info) => {
-          dragX.current = info.offset.x
-          setSwiped(info.offset.x < -SWIPE_ACTION_WIDTH / 2)
-        }}
-        animate={{ x: swiped ? -SWIPE_ACTION_WIDTH : 0 }}
-        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+      <button
         onClick={() => {
-          if (Math.abs(dragX.current) > 8) return // was a swipe, not a tap
           if (selectMode) onToggleCheck(chat.id)
           else onOpen(chat)
         }}
-        className={`group relative z-10 w-full text-left rounded-[22px] p-4 flex items-center gap-3 border transition-all duration-300
+        className={`relative z-10 w-full text-left rounded-[22px] p-4 flex items-start gap-3 border transition-all duration-300
           ${isSelected
-            ? "bg-primary-50/70 dark:bg-primary-950/30 border-primary-200/60 dark:border-primary-900/40"
+            ? "bg-[#06D6A0]/10 dark:bg-[#06D6A0]/5 border-[#06D6A0]/30"
             : "bg-white dark:bg-gray-800 border-black/[0.03] dark:border-white/[0.04] hover:border-black/[0.06] dark:hover:border-white/[0.08]"
           }
-          shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none
-          hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]
-          hover:-translate-y-0.5 active:translate-y-0
+          shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none
+          hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]
+          hover:-translate-y-0.5 active:translate-y-0 cursor-pointer
         `}
       >
         {selectMode && (
           <div
-            className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors
-              ${isChecked ? "bg-primary-500 border-primary-500" : "border-gray-300 dark:border-gray-600"}`}
+            className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors self-center
+              ${isChecked ? "bg-[#FF6B47] border-[#FF6B47]" : "border-gray-300 dark:border-gray-600"}`}
           >
             {isChecked && <CheckCheck className="w-3 h-3 text-white" />}
           </div>
@@ -301,7 +263,7 @@ function ConversationCard({
         {/* Avatar */}
         <div className="relative shrink-0">
           <div
-            className="w-[52px] h-[52px] rounded-full flex items-center justify-center text-white font-bold text-base ring-2 ring-white dark:ring-gray-800"
+            className="w-[52px] h-[52px] rounded-full flex items-center justify-center text-white font-black text-base ring-2 ring-white dark:ring-gray-800"
             style={{ backgroundImage: getAvatarGradient(other?.fullName || "?") }}
           >
             {getInitials(other?.fullName)}
@@ -313,7 +275,7 @@ function ConversationCard({
 
           {isPinned && (
             <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
-              <Pin className="w-2.5 h-2.5 text-white" />
+              <Pin className="w-2.5 h-2.5 text-white fill-white" />
             </span>
           )}
 
@@ -325,44 +287,44 @@ function ConversationCard({
               transition={{ duration: 0.5 }}
               className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[#FF6B47] rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800"
             >
-              <span className="text-white text-[10px] font-bold leading-none">
+              <span className="text-white text-[10px] font-black leading-none">
                 {unread > 99 ? "99+" : unread}
               </span>
             </motion.div>
           )}
         </div>
 
-        {/* Body */}
+        {/* Body info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-0.5 gap-2">
+          <div className="flex items-center justify-between mb-1 gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
               <p
-                className={`text-[15px] truncate ${
+                className={`text-sm truncate ${
                   unread > 0
-                    ? "font-bold text-gray-900 dark:text-white"
-                    : "font-semibold text-gray-600 dark:text-gray-300"
+                    ? "font-black text-gray-900 dark:text-white"
+                    : "font-bold text-gray-700 dark:text-gray-300"
                 }`}
               >
-                {other?.fullName || "Unknown user"}
+                {other?.fullName || "Loading details..."}
               </p>
               {other?.role && (
                 <span
-                  className={`shrink-0 text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
+                  className={`shrink-0 text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${
                     other.role === "landlord"
-                      ? "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400"
-                      : "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
+                      ? "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-200/20 dark:border-teal-800/20"
+                      : "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-200/20 dark:border-indigo-800/20"
                   }`}
                 >
                   {other.role}
                 </span>
               )}
             </div>
-            <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0 tabular-nums">
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 shrink-0 tabular-nums">
               {formatTime(chat.lastMessageTime)}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex items-center gap-1.5 mb-1.5">
             {propertyImage ? (
               <img
                 src={propertyImage}
@@ -370,10 +332,10 @@ function ConversationCard({
                 className="w-4 h-4 rounded object-cover shrink-0"
               />
             ) : (
-              <span className="w-4 h-4 rounded bg-gray-100 dark:bg-white/10 shrink-0" />
+              <span className="w-4 h-4 rounded bg-gray-150 dark:bg-white/5 shrink-0 flex items-center justify-center text-[9px]">🏠</span>
             )}
-            <p className="text-xs text-primary-600 dark:text-primary-400 font-semibold truncate">
-              {chat.propertyTitle || "Room"}
+            <p className="text-[11px] text-[#06D6A0] font-black truncate">
+              {chat.propertyTitle || "Room Listing"}
             </p>
           </div>
 
@@ -385,14 +347,14 @@ function ConversationCard({
               <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             )}
             {isTyping ? (
-              <span className="flex items-center gap-1 text-xs font-semibold text-primary-500">
+              <span className="flex items-center gap-1 text-xs font-bold text-[#06D6A0]">
                 <span className="flex gap-0.5">
                   {[0, 1, 2].map((d) => (
                     <motion.span
                       key={d}
                       animate={reduceMotion ? {} : { y: [0, -3, 0] }}
                       transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }}
-                      className="w-1 h-1 rounded-full bg-primary-500"
+                      className="w-1 h-1 rounded-full bg-[#06D6A0]"
                     />
                   ))}
                 </span>
@@ -402,8 +364,8 @@ function ConversationCard({
               <p
                 className={`text-xs truncate ${
                   unread > 0
-                    ? "text-gray-700 dark:text-gray-200 font-semibold"
-                    : "text-gray-400 dark:text-gray-500"
+                    ? "text-gray-800 dark:text-gray-100 font-bold"
+                    : "text-gray-400 dark:text-gray-500 font-medium"
                 }`}
               >
                 {chat.lastMessageFromMe && (
@@ -418,13 +380,47 @@ function ConversationCard({
             )}
           </div>
 
-          <p className="text-[10.5px] text-gray-300 dark:text-gray-600 mt-1">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-semibold">
             {formatLastActive(other?.lastActive, isOnline)}
           </p>
         </div>
+      </button>
 
-        <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block" />
-      </motion.button>
+      {/* Hover action bar (fades in on desktop hover over group) */}
+      <div className="absolute top-3 right-3 hidden lg:flex items-center gap-1 bg-white/90 dark:bg-gray-800/90 border border-black/[0.04] dark:border-white/10 rounded-full shadow-md px-1.5 py-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-md">
+        <button
+          onClick={(e) => handleAction(e, () => onTogglePin(chat.id))}
+          title={isPinned ? "Unpin conversation" : "Pin conversation"}
+          className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-amber-500 transition-colors cursor-pointer"
+        >
+          {isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+        </button>
+        <button
+          onClick={(e) => handleAction(e, () => onToggleRead(chat.id))}
+          title={unread > 0 ? "Mark as read" : "Mark as unread"}
+          className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-[#06D6A0] transition-colors cursor-pointer"
+        >
+          {unread > 0 ? <MailOpen className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
+        </button>
+        
+        {isArchived ? (
+          <button
+            onClick={(e) => handleAction(e, () => onUnarchive(chat.id))}
+            title="Unarchive conversation"
+            className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-emerald-500 transition-colors cursor-pointer"
+          >
+            <Archive className="w-3.5 h-3.5 fill-emerald-500/10" />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => handleAction(e, () => onArchive(chat.id))}
+            title="Archive conversation"
+            className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-gray-500 dark:text-gray-405 transition-colors cursor-pointer"
+          >
+            <Archive className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -433,71 +429,27 @@ function ConversationCard({
 /*  Detail panel (desktop split view)                                          */
 /* -------------------------------------------------------------------------- */
 
-function DetailPanel({ chat, other, onClose, ChatPanelComponent }) {
+function DetailPanel({ chat, onClose }) {
   if (!chat) {
     return (
-      <div className="hidden lg:flex flex-col items-center justify-center h-full text-center px-10 rounded-[28px] bg-white/60 dark:bg-gray-800/30 border border-black/[0.03] dark:border-white/[0.04]">
+      <div className="hidden lg:flex flex-col items-center justify-center h-full text-center px-10 rounded-[28px] bg-white/40 dark:bg-gray-800/20 border border-black/[0.03] dark:border-white/[0.04] backdrop-blur-md">
         <div
           className="w-14 h-14 rounded-2xl mb-4 flex items-center justify-center text-2xl"
           style={{ background: "linear-gradient(135deg, #FF6B47 0%, #FFB199 100%)" }}
         >
           💬
         </div>
-        <p className="font-bold text-gray-700 dark:text-white mb-1">Select a conversation</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs">
-          Pick a thread from the list to see the full conversation here.
+        <p className="font-extrabold text-gray-700 dark:text-white mb-1">Select a conversation</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs font-semibold leading-relaxed">
+          Pick a thread from the list on the left to see your full interactive chat here.
         </p>
       </div>
     )
   }
 
-  if (ChatPanelComponent) {
-    return (
-      <div className="hidden lg:flex flex-col h-full rounded-[28px] overflow-hidden bg-white dark:bg-gray-800 border border-black/[0.03] dark:border-white/[0.04]">
-        <ChatPanelComponent chatId={chat.id} />
-      </div>
-    )
-  }
-
-  // Graceful fallback preview when no embeddable chat component is supplied.
   return (
-    <div className="hidden lg:flex flex-col h-full rounded-[28px] overflow-hidden bg-white dark:bg-gray-800 border border-black/[0.03] dark:border-white/[0.04]">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-black/[0.04] dark:border-white/[0.06]">
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
-            style={{ backgroundImage: getAvatarGradient(other?.fullName || "?") }}
-          >
-            {getInitials(other?.fullName)}
-          </div>
-          <div className="min-w-0">
-            <p className="font-bold text-gray-900 dark:text-white text-sm truncate">
-              {other?.fullName || "Unknown user"}
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-              {formatLastActive(other?.lastActive, other?.online)}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close conversation"
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
-        <p className="text-sm text-gray-400 dark:text-gray-500">
-          Full chat for <span className="font-semibold text-gray-600 dark:text-gray-300">{chat.propertyTitle || "this room"}</span> opens in the dedicated chat view.
-        </p>
-        <a
-          href={`/chat/${chat.id}`}
-          className="px-5 py-2 rounded-full text-sm font-bold text-white bg-[#FF6B47] hover:bg-[#f55a35] transition-colors"
-        >
-          Open full conversation
-        </a>
-      </div>
+    <div className="hidden lg:flex flex-col h-full rounded-[28px] overflow-hidden bg-white dark:bg-gray-900 border border-black/[0.03] dark:border-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+      <ChatPanel chatId={chat.id} hideBackButton={true} onInvalidChat={onClose} />
     </div>
   )
 }
@@ -506,11 +458,10 @@ function DetailPanel({ chat, other, onClose, ChatPanelComponent }) {
 /*  Main component                                                             */
 /* -------------------------------------------------------------------------- */
 
-function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
+function Messages({ darkMode, toggleDarkMode }) {
   const navigate = useNavigate()
   const { chatId: routeChatId } = useParams()
   const { user, role } = useAuth()
-  const reduceMotion = useReducedMotion()
 
   const [chats, setChats] = useState([])
   const [otherUsers, setOtherUsers] = useState({})
@@ -518,15 +469,29 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
   const [error, setError] = useState("")
 
   const [query, setQuery] = useState("")
-  const [filter, setFilter] = useState("all") // "all" | "unread"
+  const [viewTab, setViewTab] = useState("active") // "active" | "unread" | "archived"
   const [pinned, setPinned] = useState(() => new Set())
-  const [localReadOverrides, setLocalReadOverrides] = useState({}) // chatId -> forced unread count
-  const [archived, setArchived] = useState(() => new Set())
+  const [localReadOverrides, setLocalReadOverrides] = useState({})
+  
+  // Persist archived conversations in localStorage
+  const [archived, setArchived] = useState(() => {
+    try {
+      const saved = localStorage.getItem("sk_archived_chats")
+      return saved ? new Set(JSON.parse(saved)) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
+
   const [selectMode, setSelectMode] = useState(false)
   const [checked, setChecked] = useState(() => new Set())
   const [selectedChatId, setSelectedChatId] = useState(routeChatId || null)
 
   const unreadField = role === "student" ? "unreadStudent" : "unreadLandlord"
+
+  useEffect(() => {
+    localStorage.setItem("sk_archived_chats", JSON.stringify(Array.from(archived)))
+  }, [archived])
 
   useEffect(() => {
     if (!user || !role) return
@@ -541,12 +506,6 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
         setChats(chatList)
         setLoading(false)
 
-        // Fetch each "other user" profile independently. A single blocked or
-        // failing read (e.g. a Firestore rule preventing cross-user reads)
-        // must NOT take down the whole batch — previously this used a bare
-        // Promise.all, so one rejected getDoc() rejected the entire promise
-        // and setOtherUsers() was never called, leaving every card stuck on
-        // "Loading...".
         const userMap = {}
         const uniqueOtherIds = [
           ...new Set(
@@ -558,8 +517,12 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
 
         await Promise.allSettled(
           uniqueOtherIds.map(async (otherId) => {
-            const snap = await getDoc(doc(db, "users", otherId))
-            if (snap.exists()) userMap[otherId] = snap.data()
+            try {
+              const snap = await getDoc(doc(db, "users", otherId))
+              if (snap.exists()) userMap[otherId] = snap.data()
+            } catch (err) {
+              console.error("Failed to load user profile in list:", otherId, err)
+            }
           })
         )
 
@@ -576,25 +539,30 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
   }, [user, role])
 
   const enriched = useMemo(() => {
-    return chats
-      .filter((c) => !archived.has(c.id))
-      .map((chat) => {
-        const otherId = role === "student" ? chat.landlordId : chat.studentId
-        const other = otherUsers[otherId]
-        const baseUnread = chat[unreadField] || 0
-        const unread = localReadOverrides[chat.id] !== undefined
-          ? localReadOverrides[chat.id]
-          : baseUnread
-        const isTyping = role === "student" ? chat.typingLandlord : chat.typingStudent
-        return { chat, other, unread, isTyping, isPinned: pinned.has(chat.id) }
-      })
-  }, [chats, otherUsers, role, unreadField, localReadOverrides, archived, pinned])
+    return chats.map((chat) => {
+      const otherId = role === "student" ? chat.landlordId : chat.studentId
+      const other = otherUsers[otherId]
+      const baseUnread = chat[unreadField] || 0
+      const unread = localReadOverrides[chat.id] !== undefined
+        ? localReadOverrides[chat.id]
+        : baseUnread
+      const isTyping = role === "student" ? chat.typingLandlord : chat.typingStudent
+      return { chat, other, unread, isTyping, isPinned: pinned.has(chat.id) }
+    })
+  }, [chats, otherUsers, role, unreadField, localReadOverrides, pinned])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return enriched
       .filter(({ other, chat, unread }) => {
-        if (filter === "unread" && unread === 0) return false
+        const isArchived = archived.has(chat.id)
+        if (viewTab === "archived") {
+          if (!isArchived) return false
+        } else {
+          if (isArchived) return false
+          if (viewTab === "unread" && unread === 0) return false
+        }
+
         if (!q) return true
         return (
           other?.fullName?.toLowerCase().includes(q) ||
@@ -607,9 +575,10 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
         const tb = toDate(b.chat.lastMessageTime)?.getTime() || 0
         return tb - ta
       })
-  }, [enriched, query, filter])
+  }, [enriched, query, viewTab, archived])
 
-  const unreadCount = enriched.filter((e) => e.unread > 0).length
+  // Count unread active (non-archived) chats
+  const unreadCount = enriched.filter((e) => e.unread > 0 && !archived.has(e.chat.id)).length
 
   const togglePin = useCallback((id) => {
     setPinned((prev) => {
@@ -630,6 +599,14 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
     setArchived((prev) => new Set(prev).add(id))
   }, [])
 
+  const unarchiveOne = useCallback((id) => {
+    setArchived((prev) => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }, [])
+
   const toggleCheck = useCallback((id) => {
     setChecked((prev) => {
       const next = new Set(prev)
@@ -640,7 +617,6 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
 
   const handleOpen = (chat) => {
     setSelectedChatId(chat.id)
-    // On mobile there's no split view, so navigate straight to the full chat.
     if (window.innerWidth < 1024) navigate(`/chat/${chat.id}`)
   }
 
@@ -653,10 +629,14 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
     setChecked(new Set())
   }
 
-  const bulkArchive = () => {
+  const bulkArchiveOrUnarchive = () => {
     setArchived((prev) => {
       const next = new Set(prev)
-      checked.forEach((id) => next.add(id))
+      if (viewTab === "archived") {
+        checked.forEach((id) => next.delete(id))
+      } else {
+        checked.forEach((id) => next.add(id))
+      }
       return next
     })
     setChecked(new Set())
@@ -674,17 +654,17 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
           {/* Header */}
           <div className="mb-6 flex items-end justify-between flex-wrap gap-3">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 rounded-full border border-primary-100/40 dark:border-primary-900/30">
-                <span className="text-[10px] font-extrabold text-primary-600 dark:text-primary-400 uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06] rounded-full shadow-sm">
+                <span className="text-[10px] font-extrabold text-[#FF6B47] uppercase tracking-widest">
                   Inbox
                 </span>
                 {unreadCount > 0 && (
-                  <span className="text-[10px] font-extrabold text-primary-600 dark:text-primary-400">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
                     · {unreadCount} unread
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+              <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                 Messages
               </h1>
             </div>
@@ -695,7 +675,7 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
                   setSelectMode((v) => !v)
                   setChecked(new Set())
                 }}
-                className="text-xs font-bold px-3 py-1.5 rounded-full text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors flex items-center gap-1.5"
+                className="text-xs font-bold px-3.5 py-2 rounded-full text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-black/[0.04] dark:hover:bg-white/5 shadow-sm border border-black/[0.04] dark:border-white/5 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <MoreVertical className="w-3.5 h-3.5" />
                 {selectMode ? "Cancel" : "Select"}
@@ -705,7 +685,7 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
 
           {/* Search + filter bar */}
           {chats.length > 0 && (
-            <div className="flex items-center gap-2 mb-5 sticky top-24 z-20">
+            <div className="flex items-center gap-2 mb-6 sticky top-24 z-20">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
                 <input
@@ -713,22 +693,43 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by name or property..."
                   aria-label="Search conversations"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] text-gray-700 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-300 dark:focus:ring-primary-800 shadow-[0_2px_10px_rgba(0,0,0,0.04)] transition-shadow"
+                  className="w-full pl-10 pr-4 py-3 rounded-full text-sm bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] text-gray-800 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all"
                 />
               </div>
 
-              <button
-                onClick={() => setFilter((f) => (f === "unread" ? "all" : "unread"))}
-                aria-pressed={filter === "unread"}
-                className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold transition-colors ${
-                  filter === "unread"
-                    ? "bg-[#FF6B47] text-white"
-                    : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-black/[0.04] dark:border-white/[0.06]"
-                }`}
-              >
-                <Filter className="w-3.5 h-3.5" />
-                Unread
-              </button>
+              {/* Segmented view controls */}
+              <div className="flex items-center bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] rounded-full p-1 shadow-sm shrink-0">
+                <button
+                  onClick={() => setViewTab("active")}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewTab === "active"
+                      ? "bg-[#FF6B47] text-white"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setViewTab("unread")}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewTab === "unread"
+                      ? "bg-[#FF6B47] text-white"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  Unread
+                </button>
+                <button
+                  onClick={() => setViewTab("archived")}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewTab === "archived"
+                      ? "bg-[#FF6B47] text-white"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  Archived
+                </button>
+              </div>
             </div>
           )}
 
@@ -739,36 +740,36 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="mb-4 flex items-center justify-between px-4 py-2.5 rounded-full bg-gray-900 dark:bg-white/10 text-white"
+                className="mb-5 flex items-center justify-between px-5 py-3 rounded-full bg-gray-900 dark:bg-white/10 text-white shadow-md"
               >
-                <span className="text-xs font-bold">{checked.size} selected</span>
+                <span className="text-xs font-black">{checked.size} selected</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={bulkMarkRead}
-                    className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                    className="flex items-center gap-1 text-xs font-bold px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
                   >
                     <MailOpen className="w-3.5 h-3.5" /> Mark read
                   </button>
                   <button
-                    onClick={bulkArchive}
-                    className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                    onClick={bulkArchiveOrUnarchive}
+                    className="flex items-center gap-1 text-xs font-bold px-3.5 py-1.5 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Archive
+                    <Trash2 className="w-3.5 h-3.5" /> {viewTab === "archived" ? "Unarchive" : "Archive"}
                   </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 items-start">
-            <div>
+          {/* Content Pane Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 lg:h-[calc(100vh-220px)] lg:min-h-[600px] items-stretch">
+            <div className="space-y-2.5 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {loading ? (
                 <ConversationSkeleton />
               ) : error ? (
                 <div className="text-center py-24 space-y-3">
                   <p className="text-xl font-bold text-red-500">{error}</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                  <p className="text-sm text-gray-400 dark:text-gray-500 font-semibold">
                     Please check your Firestore rules and try again.
                   </p>
                 </div>
@@ -776,46 +777,45 @@ function Messages({ darkMode, toggleDarkMode, ChatPanelComponent }) {
                 <EmptyState
                   role={role}
                   onBrowse={() => navigate("/find-rooms")}
-                  hasFilters={chats.length > 0 && (query.trim() !== "" || filter === "unread")}
+                  hasFilters={chats.length > 0 && (query.trim() !== "" || viewTab === "unread")}
                   onClearFilters={() => {
                     setQuery("")
-                    setFilter("all")
+                    setViewTab("active")
                   }}
+                  viewTab={viewTab}
                 />
               ) : (
-                <div className="space-y-2.5 lg:max-h-[calc(100vh-260px)] lg:overflow-y-auto lg:pr-1">
-                  <AnimatePresence initial={false}>
-                    {filtered.map(({ chat, other, unread, isTyping, isPinned }, i) => (
-                      <ConversationCard
-                        key={chat.id}
-                        chat={chat}
-                        other={other}
-                        unread={unread}
-                        isTyping={isTyping}
-                        isPinned={isPinned}
-                        isSelected={selectedChatId === chat.id}
-                        isChecked={checked.has(chat.id)}
-                        selectMode={selectMode}
-                        onOpen={handleOpen}
-                        onTogglePin={togglePin}
-                        onToggleRead={toggleRead}
-                        onArchive={archiveOne}
-                        onToggleCheck={toggleCheck}
-                        index={i}
-                      />
-                    ))}
-                  </AnimatePresence>
+                <div className="space-y-3 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+                  {filtered.map(({ chat, other, unread, isTyping, isPinned }, i) => (
+                    <ConversationCard
+                      key={chat.id}
+                      chat={chat}
+                      other={other}
+                      unread={unread}
+                      isTyping={isTyping}
+                      isSelected={selectedChatId === chat.id}
+                      isPinned={isPinned}
+                      isChecked={checked.has(chat.id)}
+                      selectMode={selectMode}
+                      isArchived={archived.has(chat.id)}
+                      onOpen={handleOpen}
+                      onTogglePin={togglePin}
+                      onToggleRead={toggleRead}
+                      onArchive={archiveOne}
+                      onUnarchive={unarchiveOne}
+                      onToggleCheck={toggleCheck}
+                      index={i}
+                    />
+                  ))}
                 </div>
               )}
             </div>
 
             {/* Desktop split-view detail panel */}
-            <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-260px)]">
+            <div className="lg:h-full lg:overflow-hidden">
               <DetailPanel
                 chat={selected?.chat}
-                other={selected?.other}
                 onClose={() => setSelectedChatId(null)}
-                ChatPanelComponent={ChatPanelComponent}
               />
             </div>
           </div>

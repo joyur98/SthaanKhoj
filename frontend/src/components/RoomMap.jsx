@@ -15,6 +15,20 @@ const KU_LAT = 27.620532425085997
 const KU_LNG = 85.53841251986667
 const NEPAL_TRAFFIC_MULTIPLIER = 1.8
 
+const useDarkMode = () => {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"))
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"))
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+    return () => observer.disconnect()
+  }, [])
+
+  return isDark
+}
+
 // Custom KU marker - small clean dot with ring
 const kuIcon = L.divIcon({
   className: "",
@@ -139,6 +153,7 @@ function RouteFromKU({ lat, lng }) {
 
 export function PickLocationMap({ lat, lng, onLocationSelect }) {
   const [satellite, setSatellite] = useState(false)
+  const isDark = useDarkMode()
   const center = lat && lng ? [lat, lng] : [27.6244, 85.5394]
 
   return (
@@ -207,6 +222,7 @@ export function PickLocationMap({ lat, lng, onLocationSelect }) {
 
 export function ViewLocationMap({ lat, lng, title }) {
   const [satellite, setSatellite] = useState(false)
+  const isDark = useDarkMode()
   const [roadDistance, setRoadDistance] = useState(null)
   const [roadDuration, setRoadDuration] = useState(null)
   const [loading, setLoading] = useState(true)
