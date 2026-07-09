@@ -85,10 +85,13 @@ function Chat({ darkMode, toggleDarkMode }) {
         setChat(chatData)
 
         const otherId = role === "student" ? chatData.landlordId : chatData.studentId
-        const otherSnap = await getDoc(doc(db, "users", otherId))
-
-        if (otherSnap.exists()) {
-          setOtherUser(otherSnap.data())
+        try {
+          const otherSnap = await getDoc(doc(db, "users", otherId))
+          if (otherSnap.exists()) {
+            setOtherUser(otherSnap.data())
+          }
+        } catch (err) {
+          console.error("Failed to load other user profile:", err)
         }
 
         setLoading(false)
