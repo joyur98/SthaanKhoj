@@ -1,10 +1,11 @@
-// frontend/src/App.jsx
+// frontend/src/App.jsx - COPY THIS EXACTLY
 import { useState, useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "./firebase"
-import { AuthProvider } from "./context/AuthContext"
+import { AuthProvider } from "./context/AuthProvider"
 
+// User Pages
 import Home from "./pages/Home"
 import Register from "./pages/Register"
 import Login from "./pages/Login"
@@ -20,6 +21,13 @@ import AIChatbot from "./components/AIChatbot"
 import StudentProfile from "./pages/StudentProfile"
 import LandlordProfile from "./pages/LandlordProfile"
 import PriceAnalytics from "./pages/PriceAnalytics"
+
+// ✅ ADMIN PAGES
+import AdminDashboard from "./pages/admin/AdminDashboard"
+import AdminUsers from "./pages/admin/AdminUsers"
+import AdminProperties from "./pages/admin/AdminProperties"
+import AdminBookings from "./pages/admin/AdminBookings"
+import AdminFraud from "./pages/admin/AdminFraud"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
@@ -75,9 +83,11 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           <Route path="/login" element={<Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
 
+          {/* User Routes */}
           <Route path="/home" element={<ProtectedRoute user={user}><Home darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
           <Route path="/find-rooms" element={<ProtectedRoute user={user}><FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
           <Route path="/rooms/:id" element={<ProtectedRoute user={user}><RoomDetail darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
@@ -90,6 +100,16 @@ function App() {
           <Route path="/profile/student" element={<ProtectedRoute user={user}><StudentProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
           <Route path="/profile/landlord" element={<ProtectedRoute user={user}><LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute user={user}><PriceAnalytics darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+
+          {/* ✅ ADMIN ROUTES - DO NOT REMOVE */}
+          <Route path="/admin/dashboard" element={<AdminDashboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/admin/users" element={<AdminUsers darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/admin/properties" element={<AdminProperties darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/admin/bookings" element={<AdminBookings darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/admin/fraud" element={<AdminFraud darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
         {user && <AIChatbot darkMode={darkMode} />}

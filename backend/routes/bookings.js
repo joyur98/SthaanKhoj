@@ -112,17 +112,5 @@ router.patch("/:id/cancel", requireStudent, async (req, res, next) => {
   }
 });
 
-/**
- * GET /api/bookings   (admin only)
- */
-router.get("/", requireAdmin, async (req, res, next) => {
-  try {
-    const snap = await db.collection("bookings").orderBy("createdAt", "desc").limit(100).get();
-    res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  } catch (err) {
-    next(err);
-  }
-});
-
 export default router;
 //bookings.js

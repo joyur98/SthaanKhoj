@@ -21,16 +21,20 @@ export const authenticate = async (req, res, next) => {
     const userSnap = await db.collection("users").doc(decoded.uid).get();
     if (userSnap.exists) req.userDoc = userSnap.data();
 
-    // Fallback: resolve role directly from students/{uid} or landlords/{uid}
-    // since that's where role actually lives for most accounts in this app.
+    // Fallback: resolve role from admins, students, or landlords collections.
     if (!req.user.role && !req.userDoc?.role) {
-      const studentSnap = await db.collection("students").doc(decoded.uid).get();
-      if (studentSnap.exists) {
-        req.resolvedRole = studentSnap.data().role || "student";
+      const adminSnap = await db.collection("admins").doc(decoded.uid).get();
+      if (adminSnap.exists) {
+        req.resolvedRole = "admin";
       } else {
-        const landlordSnap = await db.collection("landlords").doc(decoded.uid).get();
-        if (landlordSnap.exists) {
-          req.resolvedRole = landlordSnap.data().role || "landlord";
+        const studentSnap = await db.collection("students").doc(decoded.uid).get();
+        if (studentSnap.exists) {
+          req.resolvedRole = studentSnap.data().role || "student";
+        } else {
+          const landlordSnap = await db.collection("landlords").doc(decoded.uid).get();
+          if (landlordSnap.exists) {
+            req.resolvedRole = landlordSnap.data().role || "landlord";
+          }
         }
       }
     }

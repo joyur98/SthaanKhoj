@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import { auth, db } from "../firebase/firebaseAdmin.js";
 import { authenticate } from "../middleware/auth.js";
 import { registerRules, validate } from "../middleware/validate.js";
+import { promoteDesignatedAdmin } from "../services/adminBootstrap.js";
 
 const router = Router();
 
@@ -163,11 +164,24 @@ router.post("/google-signin", authLimiter, authenticate, async (req, res, next) 
  * Lightweight endpoint the frontend can use to validate a token and get user info.
  */
 router.post("/verify-token", authenticate, async (req, res) => {
-  res.json({
-    uid:   req.user.uid,
-    email: req.user.email,
-    role:  req.user.role || req.userDoc?.role || req.resolvedRole,
-  });
+  try {
+    await promoteDesignatedAdmin(req.user.uid, req.user.email);
+
+    const userSnap = await db.collection("users").doc(req.user.uid).get();
+    const role =
+      userSnap.data()?.role ||
+      req.user.role ||
+      req.userDoc?.role ||
+      req.resolvedRole;
+
+    res.json({
+      uid:   req.user.uid,
+      email: req.user.email,
+      role,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to verify token." });
+  }
 });
 
 /**

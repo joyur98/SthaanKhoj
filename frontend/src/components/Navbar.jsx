@@ -43,6 +43,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
     { key: "analytics", name: t("nav.analytics"), path: "/analytics" },
     { key: "about", name: t("nav.about"), path: "/about" },
     { key: "contact", name: t("nav.contact"), path: "/contact" },
+    ...(role === "admin" ? [{ key: "admin", name: t("nav.admin"), path: "/admin/dashboard" }] : []),
   ]
 
 
@@ -165,7 +166,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
             {/* Profile button — outline circle */}
             <Link
-              to={role === "landlord" ? "/profile/landlord" : "/profile/student"}
+              to={role === "admin" ? "/admin/dashboard" : role === "landlord" ? "/profile/landlord" : "/profile/student"}
               aria-label="Go to profile"
               className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
             >
