@@ -9,10 +9,11 @@ const router = Router();
 const ALLOWED_SELF_ROLES = ["student", "landlord"]; // never "admin" — admins are bootstrapped out-of-band
 const ALLOWED_ROLES = ["student", "landlord", "admin"];
 
-// Stricter limiter for auth endpoints
+// Stricter limiter for auth endpoints (relaxed in dev)
+const isDev = process.env.NODE_ENV !== "production";
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isDev ? 100 : 20,
   message: { error: "Too many auth attempts, please try again later." },
 });
 

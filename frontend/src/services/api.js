@@ -27,12 +27,33 @@ export const verifyToken = () =>
   authRequest("/auth/verify-token", { method: "POST" });
 
 // ── Properties ────────────────────────────────────────────────────────────────
-export const getProperties = (params = {}) => {
+export const getProperties = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  return authRequest(`/properties?${query}`);
+  const data = await authRequest(`/properties?${query}`);
+  
+  // ✅ Ensure landlord data is included
+  if (data.data && Array.isArray(data.data)) {
+    data.data = data.data.map(room => ({
+      ...room,
+      landlordName: room.landlordName || room.landlord?.fullName || "Unknown Landlord",
+      landlordPhone: room.landlordPhone || room.landlord?.phone || "Phone not provided",
+    }));
+  }
+  
+  return data;
 };
 
-export const getProperty = (id) => authRequest(`/properties/${id}`);
+export const getProperty = async (id) => {
+  const data = await authRequest(`/properties/${id}`);
+  
+  // ✅ Ensure landlord data is included
+  if (data) {
+    data.landlordName = data.landlordName || data.landlord?.fullName || "Unknown Landlord";
+    data.landlordPhone = data.landlordPhone || data.landlord?.phone || "Phone not provided";
+  }
+  
+  return data;
+};
 
 export const createProperty = (body) =>
   authRequest("/properties", { method: "POST", body: JSON.stringify(body) });
