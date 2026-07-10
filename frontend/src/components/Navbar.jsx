@@ -26,7 +26,10 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
 
   useEffect(() => {
-    if (!user || !role) { setUnreadCount(0); return }
+    if (!user || !role) {
+      Promise.resolve().then(() => setUnreadCount(0))
+      return
+    }
     const unsubscribe = listenToUnreadCount(user.uid, role, setUnreadCount)
     return () => unsubscribe()
   }, [user, role])

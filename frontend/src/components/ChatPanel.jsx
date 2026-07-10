@@ -57,11 +57,23 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
   const typingTimeoutRef = useRef(null)
   const searchInputRef = useRef(null)
 
+  const prevChatIdRef = useRef(null)
+  const onInvalidChatRef = useRef(onInvalidChat)
+
+  useEffect(() => {
+    onInvalidChatRef.current = onInvalidChat
+  }, [onInvalidChat])
+
   useEffect(() => {
     if (!user || !role || !chatId) return
 
-    setLoading(true)
-    setError("")
+    Promise.resolve().then(() => {
+      if (prevChatIdRef.current !== chatId) {
+        setLoading(true)
+        prevChatIdRef.current = chatId
+      }
+      setError("")
+    })
 
     const chatRef = doc(db, "chats", chatId)
 
@@ -69,7 +81,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
       chatRef,
       async (chatSnap) => {
         if (!chatSnap.exists()) {
-          if (onInvalidChat) onInvalidChat()
+          if (onInvalidChatRef.current) onInvalidChatRef.current()
           else navigate("/messages")
           return
         }
@@ -77,7 +89,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
         const chatData = chatSnap.data()
 
         if (user.uid !== chatData.studentId && user.uid !== chatData.landlordId) {
-          if (onInvalidChat) onInvalidChat()
+          if (onInvalidChatRef.current) onInvalidChatRef.current()
           else navigate("/messages")
           return
         }
@@ -117,7 +129,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
       unsubscribeMessages()
       setTyping(chatId, role, false).catch(() => {})
     }
-  }, [chatId, user, role, navigate, prefersReducedMotion, onInvalidChat])
+  }, [chatId, user, role, navigate, prefersReducedMotion])
 
   // Keyboard shortcuts: Ctrl/Cmd+F to search, Esc to close overlays
   useEffect(() => {
@@ -258,7 +270,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
     return (
       <>
         {str.slice(0, idx)}
-        <mark className="bg-yellow-250 dark:bg-yellow-500/40 text-inherit rounded px-0.5">
+        <mark className="bg-yellow-200 dark:bg-yellow-500/40 text-inherit rounded px-0.5">
           {str.slice(idx, idx + q.length)}
         </mark>
         {str.slice(idx + q.length)}
@@ -537,6 +549,16 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
                 })}
               </div>
             ))}
+            {otherIsTyping && (
+              <div className="flex items-end gap-2.5 mt-2 pl-1">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#06D6A0] to-teal-400 flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-sm">
+                  {otherUser?.fullName?.charAt(0) || "?"}
+                </div>
+                <div className="bg-white dark:bg-gray-800 border border-black/[0.03] dark:border-white/5 rounded-2xl rounded-bl-[4px] px-4.5 py-2.5 shadow-sm">
+                  <TypingDots small />
+                </div>
+              </div>
+            )}
           </AnimatePresence>
         )}
         <div ref={bottomRef} />

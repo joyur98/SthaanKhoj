@@ -213,3 +213,64 @@
 .leaflet-bottom {
   z-index: 3 !important;
 }
+
+/* ── Animated Route Flow ── */
+.animated-route-line {
+  stroke-dasharray: 12, 12;
+  animation: route-flow 25s linear infinite;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 4px rgba(6, 214, 160, 0.4));
+}
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+/* ── Custom Pulse & Glow Effects for Markers ── */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(6, 214, 160, 0.5);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(6, 214, 160, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(6, 214, 160, 0);
+  }
+}
+
+@keyframes ku-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 0;
+    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-ku-pulse {
+  animation: ku-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.map-marker-glow {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.map-marker-glow:hover {
+  transform: scale(1.25) translateY(-4px);
+  filter: drop-shadow(0 8px 16px rgba(255, 107, 71, 0.35));
+}

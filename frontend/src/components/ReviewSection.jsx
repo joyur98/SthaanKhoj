@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../context/AuthContext"
 import { createReview, getPropertyReviews } from "../services/reviewService"
 
@@ -47,11 +47,7 @@ function ReviewSection({ propertyId }) {
   const [submitError, setSubmitError] = useState("")
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    loadReviews()
-  }, [propertyId])
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true)
     setError("")
     try {
@@ -62,7 +58,11 @@ function ReviewSection({ propertyId }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [propertyId])
+
+  useEffect(() => {
+    loadReviews()
+  }, [loadReviews])
 
   const alreadyReviewed = user && reviews.some((r) => r.studentId === user.uid)
 

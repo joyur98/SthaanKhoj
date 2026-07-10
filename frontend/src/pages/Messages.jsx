@@ -332,7 +332,7 @@ function ConversationCard({
                 className="w-4 h-4 rounded object-cover shrink-0"
               />
             ) : (
-              <span className="w-4 h-4 rounded bg-gray-150 dark:bg-white/5 shrink-0 flex items-center justify-center text-[9px]">🏠</span>
+              <span className="w-4 h-4 rounded bg-gray-100 dark:bg-white/5 shrink-0 flex items-center justify-center text-[9px]">🏠</span>
             )}
             <p className="text-[11px] text-[#06D6A0] font-black truncate">
               {chat.propertyTitle || "Room Listing"}
@@ -415,7 +415,7 @@ function ConversationCard({
           <button
             onClick={(e) => handleAction(e, () => onArchive(chat.id))}
             title="Archive conversation"
-            className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-gray-500 dark:text-gray-405 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer"
           >
             <Archive className="w-3.5 h-3.5" />
           </button>
@@ -496,8 +496,10 @@ function Messages({ darkMode, toggleDarkMode }) {
   useEffect(() => {
     if (!user || !role) return
 
-    setLoading(true)
-    setError("")
+    Promise.resolve().then(() => {
+      setLoading(true)
+      setError("")
+    })
 
     const unsubscribe = listenToChats(
       user.uid,
@@ -620,6 +622,10 @@ function Messages({ darkMode, toggleDarkMode }) {
     if (window.innerWidth < 1024) navigate(`/chat/${chat.id}`)
   }
 
+  const handleCloseDetail = useCallback(() => {
+    setSelectedChatId(null)
+  }, [])
+
   const bulkMarkRead = () => {
     setLocalReadOverrides((prev) => {
       const next = { ...prev }
@@ -683,56 +689,6 @@ function Messages({ darkMode, toggleDarkMode }) {
             )}
           </div>
 
-          {/* Search + filter bar */}
-          {chats.length > 0 && (
-            <div className="flex items-center gap-2 mb-6 sticky top-24 z-20">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by name or property..."
-                  aria-label="Search conversations"
-                  className="w-full pl-10 pr-4 py-3 rounded-full text-sm bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] text-gray-800 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all"
-                />
-              </div>
-
-              {/* Segmented view controls */}
-              <div className="flex items-center bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] rounded-full p-1 shadow-sm shrink-0">
-                <button
-                  onClick={() => setViewTab("active")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    viewTab === "active"
-                      ? "bg-[#FF6B47] text-white"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setViewTab("unread")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    viewTab === "unread"
-                      ? "bg-[#FF6B47] text-white"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  Unread
-                </button>
-                <button
-                  onClick={() => setViewTab("archived")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    viewTab === "archived"
-                      ? "bg-[#FF6B47] text-white"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  Archived
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Bulk action bar */}
           <AnimatePresence>
             {selectMode && checked.size > 0 && (
@@ -764,6 +720,56 @@ function Messages({ darkMode, toggleDarkMode }) {
           {/* Content Pane Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 lg:h-[calc(100vh-220px)] lg:min-h-[600px] items-stretch">
             <div className="space-y-2.5 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+              {/* Search + filter bar stacked in sidebar */}
+              {chats.length > 0 && (
+                <div className="flex flex-col gap-3 mb-4 shrink-0">
+                  <div className="relative w-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
+                    <input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search by name or property..."
+                      aria-label="Search conversations"
+                      className="w-full pl-10 pr-4 py-3 rounded-full text-sm bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] text-gray-800 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#06D6A0]/50 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all"
+                    />
+                  </div>
+
+                  {/* Segmented view controls */}
+                  <div className="flex items-center bg-white dark:bg-gray-800 border border-black/[0.04] dark:border-white/[0.06] rounded-full p-1 shadow-sm w-full">
+                    <button
+                      onClick={() => setViewTab("active")}
+                      className={`flex-1 text-center py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        viewTab === "active"
+                          ? "bg-[#FF6B47] text-white"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setViewTab("unread")}
+                      className={`flex-1 text-center py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        viewTab === "unread"
+                          ? "bg-[#FF6B47] text-white"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                    >
+                      Unread
+                    </button>
+                    <button
+                      onClick={() => setViewTab("archived")}
+                      className={`flex-1 text-center py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        viewTab === "archived"
+                          ? "bg-[#FF6B47] text-white"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                    >
+                      Archived
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {loading ? (
                 <ConversationSkeleton />
               ) : error ? (
@@ -815,7 +821,7 @@ function Messages({ darkMode, toggleDarkMode }) {
             <div className="lg:h-full lg:overflow-hidden">
               <DetailPanel
                 chat={selected?.chat}
-                onClose={() => setSelectedChatId(null)}
+                onClose={handleCloseDetail}
               />
             </div>
           </div>

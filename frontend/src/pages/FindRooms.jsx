@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { AlertTriangle, Home } from "lucide-react"
 import { getProperties, toggleSavedProperty, getSavedProperties } from "../services/api"
@@ -39,24 +39,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   })
   const [applied, setApplied] = useState({})
 
-  useEffect(() => {
-    fetchRooms(applied)
-  }, [applied])
-
-  useEffect(() => {
-    const loadSaved = async () => {
-      try {
-        const properties = await getSavedProperties()
-        const ids = new Set((properties || []).map((p) => p.id))
-        setSaved(ids)
-      } catch (err) {
-        console.error("Could not load saved properties:", err.message)
-      }
-    }
-    loadSaved()
-  }, [])
-
-  const fetchRooms = async (params) => {
+  const fetchRooms = useCallback(async (params) => {
     setLoading(true)
     setError("")
     try {
@@ -70,7 +53,24 @@ function FindRooms({ darkMode, toggleDarkMode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchRooms(applied)
+  }, [applied, fetchRooms])
+
+  useEffect(() => {
+    const loadSaved = async () => {
+      try {
+        const properties = await getSavedProperties()
+        const ids = new Set((properties || []).map((p) => p.id))
+        setSaved(ids)
+      } catch (err) {
+        console.error("Could not load saved properties:", err.message)
+      }
+    }
+    loadSaved()
+  }, [])
 
   const handleFilterChange = (e) =>
     setFilters((f) => ({ ...f, [e.target.name]: e.target.value }))
