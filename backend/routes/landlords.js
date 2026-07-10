@@ -44,9 +44,10 @@ router.get("/me/properties", requireLandlord, async (req, res, next) => {
     const snap = await db
       .collection("properties")
       .where("landlordId", "==", req.user.uid)
-      .orderBy("createdAt", "desc")
       .get();
     const properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // Sort in memory to bypass composite index requirement
+    properties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(properties);
   } catch (err) {
     next(err);
@@ -62,9 +63,11 @@ router.get("/me/bookings", requireLandlord, async (req, res, next) => {
     const snap = await db
       .collection("bookings")
       .where("landlordId", "==", req.user.uid)
-      .orderBy("createdAt", "desc")
       .get();
-    res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // Sort in memory to bypass composite index requirement
+    bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(bookings);
   } catch (err) {
     next(err);
   }
@@ -89,6 +92,15 @@ router.patch("/me/bookings/:bookingId", requireLandlord, async (req, res, next) 
     }
 
     await ref.update({ status, updatedAt: new Date().toISOString() });
+
+    // If accepted, mark the corresponding property as booked (unavailable)
+    if (status === "accepted" && snap.data().propertyId) {
+      await db.collection("properties").doc(snap.data().propertyId).update({
+        isAvailable: false,
+        updatedAt: new Date().toISOString()
+      });
+    }
+
     res.json({ message: `Booking ${status}.` });
   } catch (err) {
     next(err);

@@ -34,10 +34,11 @@ app.use(
   })
 );
 
-// Global rate limiter – 100 requests per 15 min per IP
+// Global rate limiter – generous in dev, stricter in production
+const isDev = process.env.NODE_ENV !== "production";
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: isDev ? 1000 : 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },

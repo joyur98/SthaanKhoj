@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { AlertTriangle, Home } from "lucide-react"
+import { AlertTriangle, Home, Phone, User, Mail } from "lucide-react"
 import { getProperties, toggleSavedProperty, getSavedProperties } from "../services/api"
 import Navbar from "../components/Navbar"
 
@@ -39,24 +39,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   })
   const [applied, setApplied] = useState({})
 
-  useEffect(() => {
-    fetchRooms(applied)
-  }, [applied])
-
-  useEffect(() => {
-    const loadSaved = async () => {
-      try {
-        const properties = await getSavedProperties()
-        const ids = new Set((properties || []).map((p) => p.id))
-        setSaved(ids)
-      } catch (err) {
-        console.error("Could not load saved properties:", err.message)
-      }
-    }
-    loadSaved()
-  }, [])
-
-  const fetchRooms = async (params) => {
+  const fetchRooms = useCallback(async (params) => {
     setLoading(true)
     setError("")
     try {
@@ -70,7 +53,24 @@ function FindRooms({ darkMode, toggleDarkMode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchRooms(applied)
+  }, [applied, fetchRooms])
+
+  useEffect(() => {
+    const loadSaved = async () => {
+      try {
+        const properties = await getSavedProperties()
+        const ids = new Set((properties || []).map((p) => p.id))
+        setSaved(ids)
+      } catch (err) {
+        console.error("Could not load saved properties:", err.message)
+      }
+    }
+    loadSaved()
+  }, [])
 
   const handleFilterChange = (e) =>
     setFilters((f) => ({ ...f, [e.target.name]: e.target.value }))
@@ -280,10 +280,28 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                             {room.location}
                           </p>
                         </div>
+
                         <p className="text-primary-600 dark:text-primary-400 font-extrabold text-lg leading-none">
                           NPR {room.price?.toLocaleString()}
                           <span className="text-gray-400 dark:text-gray-500 font-normal text-xs"> /month</span>
                         </p>
+
+                        {/* ✅ LANDLORD INFO - ADDED HERE */}
+                        <div className="pt-3 border-t border-gray-100 dark:border-white/10">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <User className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-300 font-medium">
+                              {room.landlordName || "Unknown Landlord"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs mt-0.5">
+                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-gray-500 dark:text-gray-400">
+                              {room.landlordPhone || "Phone not provided"}
+                            </span>
+                          </div>
+                        </div>
+
                         {room.amenities?.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {room.amenities.slice(0, 3).map((a) => (
@@ -298,6 +316,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                             )}
                           </div>
                         )}
+
                         {room.availableFrom && (
                           <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
                             Available from{" "}
@@ -306,6 +325,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
                             })}
                           </p>
                         )}
+
                         <button
                           onClick={() => navigate(`/rooms/${room.id}`)}
                           className="w-full mt-1 py-2.5 rounded-full text-xs font-bold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-[0_4px_12px_rgba(6,214,160,0.25)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
