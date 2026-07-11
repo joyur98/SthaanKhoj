@@ -218,6 +218,30 @@ router.post("/set-role", authenticate, async (req, res, next) => {
 });
 
 /**
+ * POST /api/auth/generate-verification-link
+ * Generates a verification link for the authenticated user.
+ */
+router.post("/generate-verification-link", authenticate, async (req, res, next) => {
+  try {
+    const email = req.user.email;
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in token." });
+    }
+
+    const actionCodeSettings = {
+      url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
+      handleCodeInApp: false,
+    };
+
+    const link = await auth.generateEmailVerificationLink(email, actionCodeSettings);
+
+    res.json({ link });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * DELETE /api/auth/delete-account
  * Deletes Firebase Auth user + Firestore documents.
  *

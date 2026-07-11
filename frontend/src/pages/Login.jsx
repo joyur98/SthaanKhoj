@@ -51,6 +51,11 @@ function Login({ darkMode }) {
 
       navigate("/home")
     } catch (err) {
+      // Email not verified — redirect to the verify page
+      if (err.code === "auth/email-not-verified") {
+        navigate("/verify-email", { state: { email: form.email } })
+        return
+      }
       const messages = {
         "auth/user-not-found": "No account found with this email.",
         "auth/wrong-password": "Incorrect password. Please try again.",

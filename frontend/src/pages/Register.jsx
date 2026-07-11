@@ -4,6 +4,7 @@ import logo2 from "../assets/logo2.png"
 import { registerUser, googleSignIn } from "../services/api"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../firebase"
+import { sendVerificationEmail } from "../services/authService"
 
 function Register({ darkMode }) {
   const [role, setRole] = useState("student")
@@ -51,11 +52,18 @@ function Register({ darkMode }) {
         role: role,
         phone: "",
       })
-      
-      // 2. Sign in on frontend
-      await signInWithEmailAndPassword(auth, formData.email, formData.password)
-      
-      navigate("/home")
+
+      // 2. Sign in on the frontend to obtain the Firebase user object
+      const credential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
+      const firebaseUser = credential.user
+
+      // 3. Send verification email
+      await sendVerificationEmail(firebaseUser)
+
+      // 4. Redirect to the verify-email page
+      // The user stays signed in so the verify page can auto-poll & resend without re-entering password.
+      // ProtectedRoute blocks access to the app until emailVerified === true.
+      navigate("/verify-email", { state: { email: formData.email } })
     } catch (err) {
       console.error("Registration error:", err)
       const messages = {

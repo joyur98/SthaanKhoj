@@ -26,6 +26,9 @@ export const registerUser = (body) =>
 export const verifyToken = () =>
   authRequest("/auth/verify-token", { method: "POST" });
 
+export const generateVerificationLink = () =>
+  authRequest("/auth/generate-verification-link", { method: "POST" });
+
 // ── Properties ────────────────────────────────────────────────────────────────
 export const getProperties = async (params = {}) => {
   const query = new URLSearchParams(params).toString();

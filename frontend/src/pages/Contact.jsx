@@ -9,10 +9,14 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import emailjs from "@emailjs/browser"
 import Navbar from "../components/Navbar"
 
-// EmailJS credentials — from your EmailJS dashboard
-const EMAILJS_SERVICE_ID = "service_e7s7gjm"
+// Project contact details
+const PROJECT_EMAIL = "sthaankhoj4@gmail.com"
+const WHATSAPP_NUMBER = "9779765039885"
+const WHATSAPP_DISPLAY = "+977 976-5039885"
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20SthaanKhoj%2C%20I%20have%20a%20question`
 const EMAILJS_TEMPLATE_ID = "template_ihqklni"
 const EMAILJS_PUBLIC_KEY = "fE6DyFIj8B8PPQOBH"
+const EMAILJS_SERVICE_ID = "service_e7s7gjm"
 
 const DRAFT_KEY = "sthaankhoj_contact_draft"
 const MESSAGE_LIMIT = 500
@@ -195,7 +199,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
   const copyEmail = async () => {
     try {
-      await navigator.clipboard.writeText("sthaankhoj@gmail.com")
+      await navigator.clipboard.writeText(PROJECT_EMAIL)
       setCopiedEmail(true)
       setTimeout(() => setCopiedEmail(false), 1800)
     } catch { /* clipboard unavailable */ }
@@ -242,11 +246,11 @@ function ContactUs({ darkMode, toggleDarkMode }) {
     { q: "How do I list my room on SthaanKhoj?", a: "Click 'Post a Room' in the navbar, create a landlord account, fill out the listing form, and submit for verification. Listings go live within 24 hours.", cat: "Listings" },
     { q: "Is SthaanKhoj free for students?", a: "Absolutely. Browsing, searching, and contacting landlords is completely free for all KU students. No hidden fees.", cat: "General" },
     { q: "How are listings verified?", a: "Our team manually reviews every listing for accuracy, safety, and legitimacy before it appears on the platform.", cat: "Safety" },
-    { q: "Can I report a suspicious listing?", a: "Yes — use the flag icon on any listing or email us directly. We investigate all reports within 24 hours.", cat: "Safety" },
+    { q: "Can I report a suspicious listing?", a: `Yes — use the flag icon on any listing, message us on WhatsApp at ${WHATSAPP_DISPLAY}, or email ${PROJECT_EMAIL}. We investigate all reports within 24 hours.`, cat: "Safety" },
     { q: "How do I reset my password?", a: "Go to the login page and click 'Forgot password'. We'll send a reset link to your registered email.", cat: "Account" },
     { q: "Can I edit or remove my listing later?", a: "Yes, landlords can edit or unpublish a listing anytime from the 'My Listings' dashboard.", cat: "Listings" },
     { q: "Is my personal data shared with landlords?", a: "Only your name and contact details are shared, and only after you choose to reach out. We never sell your data.", cat: "Safety" },
-    { q: "How do I delete my account?", a: "Email us from your registered address and we'll process account deletion within 48 hours.", cat: "Account" },
+    { q: "How do I delete my account?", a: `Email us at ${PROJECT_EMAIL} from your registered address and we'll process account deletion within 48 hours.`, cat: "Account" },
   ]
   const categories = ["All", "General", "Listings", "Account", "Safety"]
   const [faqQuery, setFaqQuery] = useState("")
@@ -571,26 +575,43 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
               <div className="space-y-3">
                 {[
-                  { icon: <Mail className="w-4 h-4" />, label: "Email", val: "sthaankhoj@gmail.com" },
-                  { icon: <MapPin className="w-4 h-4" />, label: "Location", val: "Dhulikhel, Kavrepalanchok" },
+                  { icon: <Mail className="w-4 h-4" />, label: "Email", val: PROJECT_EMAIL, href: `mailto:${PROJECT_EMAIL}` },
+                  { icon: <MessageCircle className="w-4 h-4" />, label: "WhatsApp", val: WHATSAPP_DISPLAY, href: WHATSAPP_LINK },
+                  { icon: <MapPin className="w-4 h-4" />, label: "Location", val: "Dhulikhel, near KU" },
                   { icon: <Clock className="w-4 h-4" />, label: "Hours", val: "Sun–Fri, 9AM–6PM NPT" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl px-4 py-3 border border-white/5">
                     <span className="text-base mt-0.5">{item.icon}</span>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">{item.label}</p>
-                      <p className="text-sm font-semibold text-white">{item.val}</p>
+                      {item.href ? (
+                        <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-white hover:underline break-all">
+                          {item.val}
+                        </a>
+                      ) : (
+                        <p className="text-sm font-semibold text-white">{item.val}</p>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <a
-                href="mailto:sthaankhoj@gmail.com?subject=Schedule%20a%20call"
-                className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-[#06D6A0] hover:bg-white/90 transition w-fit"
-              >
-                <Calendar className="w-3.5 h-3.5" /> Schedule a call
-              </a>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-[#06D6A0] hover:bg-white/90 transition"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> Chat on WhatsApp
+                </a>
+                <a
+                  href={`mailto:${PROJECT_EMAIL}?subject=SthaanKhoj%20Inquiry`}
+                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white/15 text-white hover:bg-white/25 transition"
+                >
+                  <Calendar className="w-3.5 h-3.5" /> Send an email
+                </a>
+              </div>
 
               <div>
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-3">Follow Us</p>

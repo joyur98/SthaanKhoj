@@ -24,10 +24,16 @@ import AdminUsers from "./pages/admin/AdminUsers"
 import AdminProperties from "./pages/admin/AdminProperties"
 import AdminBookings from "./pages/admin/AdminBookings"
 import AdminFraud from "./pages/admin/AdminFraud"
+import VerifyEmail from "./pages/VerifyEmail"
+import VerificationSuccess from "./pages/VerificationSuccess"
 
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
   if (!user) return <Navigate to="/" replace />
+  // Block access for users who haven't verified their email yet
+  if (!user.emailVerified) {
+    return <Navigate to="/verify-email" state={{ email: user.email }} replace />
+  }
   return children
 }
 
@@ -54,6 +60,8 @@ function AppRoutes({ user, darkMode, toggleDarkMode }) {
       <Routes>
         <Route path="/" element={<Register darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         <Route path="/login" element={<Login darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+        <Route path="/verify-email" element={<VerifyEmail darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+        <Route path="/verification-success" element={<VerificationSuccess darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
 
         <Route path="/home" element={<ProtectedRoute user={user}><Home darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
         <Route path="/find-rooms" element={<ProtectedRoute user={user}><FindRooms darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
