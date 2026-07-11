@@ -38,6 +38,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   const [error, setError] = useState("")
   const [activeImg, setActiveImg] = useState(0)
   const [chatLoading, setChatLoading] = useState(false)
+  const [chatError, setChatError] = useState("")
 
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
@@ -64,7 +65,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   const handleContactLandlord = async () => {
     if (!user || !room) return
     if (!room.landlordId) return
-
+    setChatError("")
     try {
       setChatLoading(true)
       const chatId = await getOrCreateChat(
@@ -76,6 +77,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
       navigate(`/chat/${chatId}`)
     } catch (err) {
       console.error("getOrCreateChat error:", err)
+      setChatError("Could not open chat. Please try again.")
     } finally {
       setChatLoading(false)
     }
@@ -292,6 +294,9 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       >
                         {chatLoading ? "Opening chat..." : "Contact Landlord"}
                       </button>
+                      {chatError && (
+                        <p className="text-xs font-semibold text-red-500 text-center mt-1">{chatError}</p>
+                      )}
                     </div>
                   </div>
                 </div>

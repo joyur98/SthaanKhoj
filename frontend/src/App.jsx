@@ -27,6 +27,7 @@ import AdminFraud from "./pages/admin/AdminFraud"
 import VerifyEmail from "./pages/VerifyEmail"
 import VerificationSuccess from "./pages/VerificationSuccess"
 
+
 function ProtectedRoute({ user, children }) {
   if (user === undefined) return null
   if (!user) return <Navigate to="/" replace />
@@ -75,6 +76,7 @@ function AppRoutes({ user, darkMode, toggleDarkMode }) {
         <Route path="/profile/student" element={<ProtectedRoute user={user}><StudentProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
         <Route path="/profile/landlord" element={<ProtectedRoute user={user}><LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute user={user}><PriceAnalytics darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
+        
 
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminRoute user={user}><AdminDashboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></AdminRoute>} />

@@ -399,6 +399,8 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
           <div className="flex items-center justify-center h-full">
             <p className="text-sm font-bold text-red-500">{error}</p>
           </div>
+        ) : error && messages.length > 0 ? (
+          <div />
         ) : messages.length === 0 ? (
           <EmptyState
             otherUser={otherUser}
@@ -564,9 +566,13 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
         <div ref={bottomRef} />
       </div>
 
-      {error && messages.length > 0 && (
-        <div className="shrink-0 px-5 py-2 bg-red-50 dark:bg-red-950/20 border-t border-red-100 dark:border-red-900/20">
+      {error && (
+        <div className="shrink-0 px-5 py-2 bg-red-50 dark:bg-red-950/20 border-t border-red-100 dark:border-red-900/20 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-red-500 shrink-0">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
           <p className="text-xs font-bold text-red-600 dark:text-red-400">{error}</p>
+          <button onClick={() => setError("")} className="ml-auto text-[10px] font-bold text-red-400 hover:text-red-600 shrink-0">Dismiss</button>
         </div>
       )}
 
