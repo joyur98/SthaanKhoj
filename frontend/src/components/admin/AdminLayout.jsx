@@ -33,10 +33,10 @@ function AdminLayout({ children, darkMode, toggleDarkMode }) {
         <div className="flex min-h-screen">
 
           {/* Sidebar */}
-          <aside className="hidden md:flex w-64 shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-white/5">
+          <aside className="hidden md:flex w-64 shrink-0 flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-r border-gray-100 dark:border-white/5">
             <div className="p-6 border-b border-gray-100 dark:border-white/5">
-              <Link to="/admin/dashboard" className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-[#06D6A0] flex items-center justify-center">
+              <Link to="/admin/dashboard" className="flex items-center gap-2 group">
+                <div className="w-9 h-9 rounded-xl bg-[#06D6A0] flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                   <ShieldAlert className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -51,10 +51,10 @@ function AdminLayout({ children, darkMode, toggleDarkMode }) {
                 <Link
                   key={path}
                   to={path}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     isActive(path, end)
-                      ? "bg-[#06D6A0]/10 text-[#04a878] dark:text-[#06D6A0]"
-                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-[#06D6A0]/10 text-[#04a878] dark:text-[#06D6A0] shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:scale-[1.02]"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -66,21 +66,21 @@ function AdminLayout({ children, darkMode, toggleDarkMode }) {
             <div className="p-4 border-t border-gray-100 dark:border-white/5 space-y-2">
               <button
                 onClick={toggleDarkMode}
-                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200 hover:scale-[1.02]"
               >
                 {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 {darkMode ? "Light Mode" : "Dark Mode"}
               </button>
               <button
                 onClick={() => navigate("/home")}
-                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200 hover:scale-[1.02]"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to App
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-200 hover:scale-[1.02]"
               >
                 <LogOut className="w-4 h-4" />
                 Log Out
@@ -92,12 +92,12 @@ function AdminLayout({ children, darkMode, toggleDarkMode }) {
           {/* Main content */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Mobile header */}
-            <header className="md:hidden sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-white/5 px-4 py-3">
+            <header className="md:hidden sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-100 dark:border-white/5 px-4 py-3">
               <div className="flex items-center justify-between mb-3">
                 <p className="font-bold text-gray-900 dark:text-white text-sm">Admin Panel</p>
                 <button
                   onClick={() => navigate("/home")}
-                  className="text-xs font-semibold text-[#06D6A0]"
+                  className="text-xs font-semibold text-[#06D6A0] hover:scale-105 transition-transform"
                 >
                   ← App
                 </button>
@@ -107,10 +107,10 @@ function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   <Link
                     key={path}
                     to={path}
-                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
                       isActive(path, end)
-                        ? "bg-[#06D6A0] text-white"
-                        : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"
+                        ? "bg-[#06D6A0] text-white shadow-sm"
+                        : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10"
                     }`}
                   >
                     {label}
