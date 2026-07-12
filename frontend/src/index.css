@@ -37,6 +37,8 @@
   --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-in-right: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-down: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-in: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-scale-in: scale-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
@@ -61,6 +63,34 @@
   @keyframes slide-down {
     from { opacity: 0; transform: translateY(-12px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes badge-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(255, 107, 71, 0.3);
+    }
+    50% { 
+      transform: scale(1.15);
+      box-shadow: 0 2px 16px rgba(255, 107, 71, 0.6);
+    }
+  }
+  @keyframes slide-in {
+    from { 
+      opacity: 0;
+      transform: translateX(-50%) scaleX(0);
+    }
+    to { 
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
+    }
   }
 }
 
@@ -367,4 +397,121 @@
 .dark .glass {
   background: rgba(17, 24, 39, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── NAVBAR ANIMATIONS ────────────────────────────────────────────────────── */
+
+/* Fade In Animation */
+.animate-fade-in {
+  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Scale In Animation for Dropdown */
+.animate-scale-in {
+  animation: scale-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Slide In Animation for Active Indicator */
+.animate-slide-in {
+  animation: slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Badge Pulse Animation with Glow */
+.animate-badge-pulse {
+  animation: badge-pulse 0.8s ease-in-out 3;
+}
+
+/* Float Animation for Logo */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Staggered Children Animation for Mobile Menu */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 350ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 450ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 500ms; }
+.stagger-children > *:nth-child(11) { animation-delay: 550ms; }
+.stagger-children > *:nth-child(12) { animation-delay: 600ms; }
+
+/* Shimmer Effect for Buttons */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shimmer:hover::before {
+  left: 100%;
+}
+
+/* Navbar Glow on Scroll */
+.navbar-glow {
+  position: relative;
+}
+
+.navbar-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(6, 214, 160, 0.3), rgba(6, 214, 160, 0.05), rgba(6, 214, 160, 0.3));
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: blur(12px);
+  z-index: -1;
+}
+
+.navbar-glow.scrolled::before {
+  opacity: 1;
+}
+
+/* Hover Scale with Shadow */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark .hover-lift:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Slide Down for Mobile Menu */
+.animate-slide-down {
+  animation: slide-down 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Smooth Navbar Transition */
+.navbar-transition {
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
