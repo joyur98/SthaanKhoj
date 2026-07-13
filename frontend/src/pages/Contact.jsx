@@ -3,7 +3,8 @@ import { Link } from "react-router-dom"
 import {
   Mail, MapPin, Clock, Send, CheckCircle2, AlertTriangle, MessageCircle,
   Copy, Navigation, Search, ChevronDown, ThumbsUp, ThumbsDown, Flag,
-  Sparkles, Check, X, Calendar,
+  Sparkles, Check, X, Calendar, Phone, Globe,
+  ArrowRight, Zap, Shield, Users, Building, Award
 } from "lucide-react"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import emailjs from "@emailjs/browser"
@@ -205,7 +206,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
     } catch { /* clipboard unavailable */ }
   }
 
-  // live support status — Sun(0)–Fri(5), 9AM–6PM NPT (assumes visitor's clock ~ NPT; safe fallback)
+  // live support status
   const isOnline = useMemo(() => {
     const now = new Date()
     const day = now.getDay()
@@ -215,23 +216,51 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
   const contactMethods = [
     {
-      icon: <Mail className="w-6 h-6" />, label: "Email Us", value: "sthaankhoj@gmail.com",
-      sub: "Avg. reply time: 2.3 hrs", href: "mailto:sthaankhoj@gmail.com", color: "primary",
-      action: { label: copiedEmail ? "Copied!" : "Copy address", icon: copiedEmail ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />, onClick: copyEmail },
+      icon: <Mail className="w-6 h-6" />,
+      label: "Email Us",
+      value: "sthaankhoj4@gmail.com",
+      sub: "Avg. reply time: 2.3 hrs",
+      href: `mailto:${PROJECT_EMAIL}`,
+      color: "primary",
+      action: {
+        label: copiedEmail ? "Copied!" : "Copy address",
+        icon: copiedEmail ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />,
+        onClick: copyEmail
+      },
     },
     {
-      icon: <MapPin className="w-6 h-6" />, label: "Our Location", value: "Dhulikhel, Kavrepalanchok",
-      sub: "Near Kathmandu University", href: "https://maps.google.com/?q=Dhulikhel", color: "teal",
-      action: { label: "Get directions", icon: <Navigation className="w-3.5 h-3.5" />, href: "https://maps.google.com/?q=Dhulikhel" },
+      icon: <MapPin className="w-6 h-6" />,
+      label: "Our Location",
+      value: "Dhulikhel, Kavrepalanchok",
+      sub: "Near Kathmandu University",
+      href: "https://maps.google.com/?q=Dhulikhel",
+      color: "teal",
+      action: {
+        label: "Get directions",
+        icon: <Navigation className="w-3.5 h-3.5" />,
+        href: "https://maps.google.com/?q=Dhulikhel"
+      },
     },
     {
-      icon: <Clock className="w-6 h-6" />, label: "Support Hours", value: "Sun – Fri, 9AM – 6PM",
-      sub: "Nepal Standard Time (NPT)", href: null, color: "indigo",
+      icon: <Clock className="w-6 h-6" />,
+      label: "Support Hours",
+      value: "Sun – Fri, 9AM – 6PM",
+      sub: "Nepal Standard Time (NPT)",
+      href: null,
+      color: "indigo",
     },
     {
-      icon: <MessageCircle className="w-6 h-6" />, label: "WhatsApp", value: "Chat instantly",
-      sub: "Avg. reply time: 1.5 hrs", href: "https://wa.me/9770000000000?text=Hi%20SthaanKhoj%2C%20I%20have%20a%20question", color: "primary",
-      action: { label: "Open chat", icon: <MessageCircle className="w-3.5 h-3.5" />, href: "https://wa.me/9770000000000" },
+      icon: <MessageCircle className="w-6 h-6" />,
+      label: "WhatsApp",
+      value: "Chat instantly",
+      sub: "Avg. reply time: 1.5 hrs",
+      href: WHATSAPP_LINK,
+      color: "primary",
+      action: {
+        label: "Open chat",
+        icon: <MessageCircle className="w-3.5 h-3.5" />,
+        href: WHATSAPP_LINK
+      },
     },
   ]
 
@@ -241,7 +270,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
     indigo: { bg: "bg-indigo-50 dark:bg-indigo-950/40", text: "text-indigo-600 dark:text-indigo-400", ring: "ring-indigo-300/40" },
   }
 
-  // ---------- FAQ ----------
+  // FAQ
   const faqs = [
     { q: "How do I list my room on SthaanKhoj?", a: "Click 'Post a Room' in the navbar, create a landlord account, fill out the listing form, and submit for verification. Listings go live within 24 hours.", cat: "Listings" },
     { q: "Is SthaanKhoj free for students?", a: "Absolutely. Browsing, searching, and contacting landlords is completely free for all KU students. No hidden fees.", cat: "General" },
@@ -318,10 +347,10 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                 Contact Us
               </span>
             </motion.div>
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-dark-955 dark:text-white">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-dark-950 dark:text-white">
               We'd love to hear from you
             </h1>
-            <p className="text-base md:text-lg text-gray-500 dark:text-gray-300 font-normal leading-relaxed">
+            <p className="text-base md:text-lg text-gray-500 dark:text-gray-300 font-normal leading-relaxed max-w-2xl mx-auto">
               Whether you have a question about listings, need help with your account, or want to partner with us — our team is ready to help.
             </p>
           </div>
@@ -345,7 +374,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                     background: "radial-gradient(180px circle at var(--glow-x,50%) var(--glow-y,50%), rgba(6,214,160,0.18), transparent 65%)",
                   }}
                 />
-                <div className="relative h-full bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl border border-white/60 dark:border-white/10 p-6 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] flex flex-col">
+                <div className="relative h-full bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-white/60 dark:border-white/10 p-6 rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] flex flex-col">
                   <div className={`w-12 h-12 rounded-2xl ${colors.bg} ${colors.text} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6`}>
                     {method.icon}
                   </div>
@@ -398,6 +427,15 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                 <h2 className="text-2xl font-bold text-dark-950 dark:text-white tracking-tight">Send us a message</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill out the form and we'll get back to you within 12 hours.</p>
               </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-950/30 rounded-full border border-green-100 dark:border-green-900/30">
+                <span className={`relative flex w-2 h-2`}>
+                  <span className={`absolute inline-flex h-full w-full rounded-full ${isOnline ? "bg-green-400 animate-ping" : "bg-gray-400"} opacity-75`}></span>
+                  <span className={`relative inline-flex rounded-full w-2 h-2 ${isOnline ? "bg-green-500" : "bg-gray-400"}`}></span>
+                </span>
+                <span className="text-[10px] font-bold text-green-600 dark:text-green-400">
+                  {isOnline ? "Online Now" : "Offline"}
+                </span>
+              </div>
             </div>
 
             {draftRestored && !submitted && (
@@ -437,7 +475,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                     Your message is on its way. We'll reply to <span className="font-semibold">{formData.email}</span>{priority ? ", and flagged this as urgent" : ""} shortly.
                   </p>
                   <div className="flex flex-wrap justify-center gap-3 pt-2">
-                    <Link to="/rooms" className="text-xs font-bold px-4 py-2 rounded-full bg-primary-600 text-white hover:bg-primary-700 transition">Browse Rooms</Link>
+                    <Link to="/find-rooms" className="text-xs font-bold px-4 py-2 rounded-full bg-primary-600 text-white hover:bg-primary-700 transition">Browse Rooms</Link>
                     <button onClick={resetForm} className="text-xs font-bold px-4 py-2 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition">
                       Send another message
                     </button>
@@ -534,7 +572,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 rounded-full font-bold text-white text-xs tracking-wider uppercase bg-[#06D6A0] hover:bg-[#05c490] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(6,214,160,0.25)]"
+                    className="w-full py-3.5 rounded-full font-bold text-white text-xs tracking-wider uppercase bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(6,214,160,0.25)] group"
                   >
                     {loading ? (
                       <>
@@ -544,33 +582,30 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                         </svg>
                         Sending…
                       </>
-                    ) : "Send Message"}
+                    ) : (
+                      <>
+                        Send Message
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </motion.form>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Right Panel */}
-          <div className="lg:col-span-5 bg-[#06D6A0] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg">
+          {/* Right Panel - Enhanced */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-[#06D6A0] to-[#04a878] p-8 md:p-10 rounded-[24px] text-white text-left flex flex-col justify-between relative overflow-hidden shadow-lg">
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] bg-white/20 rounded-full blur-[40px]"></div>
             <div className="absolute bottom-[-5%] left-[-5%] w-[120px] h-[120px] bg-white/10 rounded-full blur-[50px]"></div>
+            <div className="absolute top-[40%] left-[20%] w-[200px] h-[200px] bg-white/5 rounded-full blur-[60px]"></div>
 
             <div className="space-y-6 relative z-10">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight mb-2">Quick ways to reach us</h2>
-                  <p className="text-xs text-white/70 leading-relaxed">
-                    Prefer a more direct line? Use any of the options below to connect with the SthaanKhoj team.
-                  </p>
-                </div>
-                <span className="shrink-0 inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full bg-white/15">
-                  <span className={`relative flex w-2 h-2`}>
-                    <span className={`absolute inline-flex h-full w-full rounded-full ${isOnline ? "bg-emerald-300 animate-ping" : "bg-white/40"} opacity-75`}></span>
-                    <span className={`relative inline-flex rounded-full w-2 h-2 ${isOnline ? "bg-emerald-300" : "bg-white/40"}`}></span>
-                  </span>
-                  {isOnline ? "We're online now" : "Back at 9AM NPT"}
-                </span>
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Quick ways to reach us</h2>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  Prefer a more direct line? Use any of the options below to connect with the SthaanKhoj team.
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -580,7 +615,13 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                   { icon: <MapPin className="w-4 h-4" />, label: "Location", val: "Dhulikhel, near KU" },
                   { icon: <Clock className="w-4 h-4" />, label: "Hours", val: "Sun–Fri, 9AM–6PM NPT" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl px-4 py-3 border border-white/5">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-start gap-3 bg-white/10 rounded-2xl px-4 py-3 border border-white/10 hover:bg-white/15 transition-all duration-300"
+                  >
                     <span className="text-base mt-0.5">{item.icon}</span>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">{item.label}</p>
@@ -592,42 +633,59 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                         <p className="text-sm font-semibold text-white">{item.val}</p>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <a
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-[#06D6A0] hover:bg-white/90 transition"
+                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-[#06D6A0] hover:bg-white/90 hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   <MessageCircle className="w-3.5 h-3.5" /> Chat on WhatsApp
                 </a>
                 <a
                   href={`mailto:${PROJECT_EMAIL}?subject=SthaanKhoj%20Inquiry`}
-                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white/15 text-white hover:bg-white/25 transition"
+                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-full bg-white/15 text-white hover:bg-white/25 hover:scale-105 transition-all duration-300"
                 >
-                  <Calendar className="w-3.5 h-3.5" /> Send an email
+                  <Send className="w-3.5 h-3.5" /> Send an email
                 </a>
               </div>
 
-              <div>
+              <div className="pt-2">
                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-3">Follow Us</p>
                 <div className="flex gap-3">
-                  {[{ label: "Facebook", icon: "f" }, { label: "Instagram", icon: "ig" }, { label: "Twitter", icon: "tw" }].map((s, i) => (
-                    <a key={i} href="#" aria-label={s.label} className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 border border-white/10 flex items-center justify-center text-xs font-bold text-white transition-all duration-200">
-                      {s.icon}
-                    </a>
-                  ))}
+                  <a href="#" aria-label="Facebook" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="Twitter" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="Website" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 border border-white/10 flex items-center justify-center text-white transition-all duration-300 hover:scale-110">
+                    <Globe className="w-4 h-4" />
+                  </a>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 relative z-10">
-              <span className="text-xs font-bold text-white bg-white/15 px-3 py-1 rounded-full">KU Student Project</span>
-              <span className="text-xs font-bold text-white bg-white/15 px-3 py-1 rounded-full">Always Responsive</span>
+            <div className="mt-8 flex flex-wrap items-center gap-3 relative z-10 pt-4 border-t border-white/10">
+              <span className="text-xs font-bold text-white bg-white/15 px-3 py-1 rounded-full flex items-center gap-1">
+                <Shield className="w-3 h-3" /> KU Student Project
+              </span>
+              <span className="text-xs font-bold text-white bg-white/15 px-3 py-1 rounded-full flex items-center gap-1">
+                <Zap className="w-3 h-3" /> Always Responsive
+              </span>
             </div>
           </div>
         </section>
@@ -635,12 +693,17 @@ function ContactUs({ darkMode, toggleDarkMode }) {
         {/* ---------------- FAQ ---------------- */}
         <section className="space-y-8">
           <div className="text-left space-y-2">
-            <h2 className="text-3xl font-extrabold tracking-tight text-dark-950 dark:text-white">
-              Frequently asked questions
-            </h2>
-            <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider">
-              Quick answers to common queries
-            </p>
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-8 bg-gradient-to-b from-primary-500 to-teal-400 rounded-full"></div>
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-dark-950 dark:text-white">
+                  Frequently asked questions
+                </h2>
+                <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider">
+                  Quick answers to common queries
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -658,7 +721,11 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                 <button
                   key={c}
                   onClick={() => setFaqCat(c)}
-                  className={`text-xs font-bold px-3.5 py-2 rounded-full border transition-colors ${faqCat === c ? "bg-primary-600 border-primary-600 text-white" : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-primary-300"}`}
+                  className={`text-xs font-bold px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 ${
+                    faqCat === c
+                      ? "bg-gradient-to-r from-primary-600 to-teal-500 border-transparent text-white shadow-md"
+                      : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-primary-300"
+                  }`}
                 >
                   {c}
                 </button>
@@ -673,7 +740,13 @@ function ContactUs({ darkMode, toggleDarkMode }) {
             {filteredFaqs.map((faq, idx) => {
               const open = openFaq === idx
               return (
-                <div key={idx} className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.005)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.2)] overflow-hidden text-left">
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white dark:bg-dark-900/50 border border-gray-100/70 dark:border-white/5 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.005)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.2)] overflow-hidden text-left hover:shadow-md transition-all duration-300"
+                >
                   <button
                     onClick={() => setOpenFaq(open ? null : idx)}
                     className="w-full flex items-start gap-3 p-6 text-left"
@@ -707,7 +780,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </motion.div>
               )
             })}
           </div>
@@ -715,6 +788,7 @@ function ContactUs({ darkMode, toggleDarkMode }) {
 
       </main>
 
+      {/* ---------------- FOOTER ---------------- */}
       <footer className="w-full border-t border-gray-100 dark:border-white/5 bg-white dark:bg-gray-900 py-8 text-center text-xs font-semibold text-gray-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© 2026 SthaanKhoj. All rights reserved.</p>
