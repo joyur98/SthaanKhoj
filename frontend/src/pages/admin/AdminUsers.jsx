@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { 
   User, Mail, Calendar, Shield, UserCog, 
   UserCheck, UserX, Crown, Users as UsersIcon,
-  Search, Filter
+  Search, Filter, TrendingUp, TrendingDown
 } from "lucide-react"
 import AdminLayout from "../../components/admin/AdminLayout"
 import {
@@ -25,13 +26,35 @@ const ROLE_ICONS = {
 }
 
 function AdminUsers({ darkMode, toggleDarkMode }) {
+  const reduceMotion = useReducedMotion()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [actionId, setActionId] = useState(null)
-  const [filter, setFilter] = useState("all") // all, active, disabled, student, landlord, admin
+  const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } 
+    }
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1
+      }
+    }
+  }
 
   const load = () => {
     setLoading(true)
@@ -76,17 +99,14 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
 
   // Filter users
   const filteredUsers = users.filter(user => {
-    // Status filter
     if (filter === "active") return user.isActive !== false
     if (filter === "disabled") return user.isActive === false
     if (filter === "student") return user.role === "student"
     if (filter === "landlord") return user.role === "landlord"
     if (filter === "admin") return user.role === "admin"
     if (filter === "all") return true
-    
     return true
   }).filter(user => {
-    // Search filter
     if (!searchTerm) return true
     const term = searchTerm.toLowerCase()
     return (
@@ -111,9 +131,12 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
       label: "User",
       render: (r) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#06D6A0] to-[#04a878] flex items-center justify-center text-white font-bold text-sm">
+          <motion.div 
+            whileHover={!reduceMotion ? { scale: 1.05, rotate: -5 } : {}}
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-[#06D6A0] to-[#04a878] flex items-center justify-center text-white font-bold text-sm"
+          >
             {r.fullName ? r.fullName.charAt(0).toUpperCase() : "?"}
-          </div>
+          </motion.div>
           <div className="flex flex-col">
             <span className="font-semibold text-gray-900 dark:text-white">
               {r.fullName || "Unnamed User"}
@@ -130,28 +153,40 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
       key: "role",
       label: "Role",
       render: (r) => (
-        <Badge variant={ROLE_VARIANT[r.role] || "default"}>
-          <span className="flex items-center gap-1">
-            {ROLE_ICONS[r.role] || <User className="w-3 h-3" />}
-            {r.role || "Unknown"}
-          </span>
-        </Badge>
+        <motion.div
+          initial={!reduceMotion ? { scale: 0.8 } : {}}
+          animate={!reduceMotion ? { scale: 1 } : {}}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <Badge variant={ROLE_VARIANT[r.role] || "default"}>
+            <span className="flex items-center gap-1">
+              {ROLE_ICONS[r.role] || <User className="w-3 h-3" />}
+              {r.role || "Unknown"}
+            </span>
+          </Badge>
+        </motion.div>
       ),
     },
     {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge variant={r.isActive !== false ? "success" : "danger"}>
-          <span className="flex items-center gap-1">
-            {r.isActive !== false ? (
-              <UserCheck className="w-3 h-3" />
-            ) : (
-              <UserX className="w-3 h-3" />
-            )}
-            {r.isActive !== false ? "Active" : "Disabled"}
-          </span>
-        </Badge>
+        <motion.div
+          initial={!reduceMotion ? { scale: 0.8 } : {}}
+          animate={!reduceMotion ? { scale: 1 } : {}}
+          transition={{ type: "spring", stiffness: 300, delay: 0.05 }}
+        >
+          <Badge variant={r.isActive !== false ? "success" : "danger"}>
+            <span className="flex items-center gap-1">
+              {r.isActive !== false ? (
+                <UserCheck className="w-3 h-3" />
+              ) : (
+                <UserX className="w-3 h-3" />
+              )}
+              {r.isActive !== false ? "Active" : "Disabled"}
+            </span>
+          </Badge>
+        </motion.div>
       ),
     },
     { 
@@ -171,47 +206,55 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
         <div className="flex flex-wrap gap-1.5">
           {/* Toggle Active/Disabled */}
           {r.isActive !== false ? (
-            <button
+            <motion.button
+              whileHover={!reduceMotion ? { scale: 1.1 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.9 } : {}}
               onClick={() => handleDisable(r.id, true)}
               disabled={actionId === r.id}
-              className="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all hover:scale-105 disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all disabled:opacity-50"
               title="Disable User"
             >
               <UserX className="w-4 h-4" />
-            </button>
+            </motion.button>
           ) : (
-            <button
+            <motion.button
+              whileHover={!reduceMotion ? { scale: 1.1 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.9 } : {}}
               onClick={() => handleDisable(r.id, false)}
               disabled={actionId === r.id}
-              className="p-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all hover:scale-105 disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all disabled:opacity-50"
               title="Enable User"
             >
               <UserCheck className="w-4 h-4" />
-            </button>
+            </motion.button>
           )}
 
           {/* Make Admin */}
           {r.role !== "admin" && (
-            <button
+            <motion.button
+              whileHover={!reduceMotion ? { scale: 1.1 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.9 } : {}}
               onClick={() => handleRoleChange(r.id, "admin")}
               disabled={actionId === r.id}
-              className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all hover:scale-105 disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all disabled:opacity-50"
               title="Make Admin"
             >
               <Crown className="w-4 h-4" />
-            </button>
+            </motion.button>
           )}
 
-          {/* Demote from Admin (optional) */}
+          {/* Demote from Admin */}
           {r.role === "admin" && (
-            <button
+            <motion.button
+              whileHover={!reduceMotion ? { scale: 1.1 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.9 } : {}}
               onClick={() => handleRoleChange(r.id, "student")}
               disabled={actionId === r.id}
-              className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all hover:scale-105 disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all disabled:opacity-50"
               title="Demote to Student"
             >
               <UserCog className="w-4 h-4" />
-            </button>
+            </motion.button>
           )}
         </div>
       ),
@@ -220,47 +263,65 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
 
   return (
     <AdminLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode}>
-      <PageHeader 
-        title="Users" 
-        description="Manage all registered users on the platform" 
-      />
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+      >
+        <PageHeader 
+          title="Users" 
+          description="Manage all registered users on the platform" 
+        />
+      </motion.div>
       
       <ErrorBanner message={error} />
       <SuccessBanner message={success} />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-gray-900 dark:text-white">{stats.total}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</p>
-        </div>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-green-600 dark:text-green-400">{stats.active}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active</p>
-        </div>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-red-600 dark:text-red-400">{stats.disabled}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Disabled</p>
-        </div>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-blue-600 dark:text-blue-400">{stats.students}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Students</p>
-        </div>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400">{stats.landlords}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Landlords</p>
-        </div>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-white/5 hover:shadow-lg transition-all duration-300 text-center">
-          <p className="text-xl font-extrabold text-purple-600 dark:text-purple-400">{stats.admins}</p>
-          <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Admins</p>
-        </div>
-      </div>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6"
+      >
+        {[
+          { label: "Total", value: stats.total, color: "text-gray-900 dark:text-white", icon: UsersIcon },
+          { label: "Active", value: stats.active, color: "text-green-600 dark:text-green-400", icon: UserCheck },
+          { label: "Disabled", value: stats.disabled, color: "text-red-600 dark:text-red-400", icon: UserX },
+          { label: "Students", value: stats.students, color: "text-blue-600 dark:text-blue-400", icon: User },
+          { label: "Landlords", value: stats.landlords, color: "text-amber-600 dark:text-amber-400", icon: Shield },
+          { label: "Admins", value: stats.admins, color: "text-purple-600 dark:text-purple-400", icon: Crown },
+        ].map((stat, idx) => (
+          <motion.div
+            key={idx}
+            variants={fadeInUp}
+            whileHover={!reduceMotion ? { y: -2, transition: { duration: 0.2 } } : {}}
+            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-100 dark:border-gray-700/50 shadow-sm text-center hover:shadow-lg transition-all duration-300"
+          >
+            <stat.icon className={`w-4 h-4 mx-auto mb-1 ${stat.color}`} />
+            <p className={`text-xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              {stat.label}
+            </p>
+          </motion.div>
+        ))}
+      </motion.div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col sm:flex-row gap-3 mb-6"
+      >
         {/* Search Input */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <motion.div
+            animate={!reduceMotion ? { scale: [1, 1.05, 1] } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </motion.div>
           <input
             type="text"
             placeholder="Search users by name or email..."
@@ -280,36 +341,64 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
             { key: "landlord", label: "Landlords", icon: Shield },
             { key: "admin", label: "Admins", icon: Crown },
           ].map(({ key, label, icon: Icon }) => (
-            <button
+            <motion.button
               key={key}
+              whileHover={!reduceMotion ? { scale: 1.03 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.97 } : {}}
               onClick={() => setFilter(key)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
                 filter === key
-                  ? "bg-[#06D6A0] text-white shadow-sm"
-                  : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10"
+                  ? "bg-gradient-to-r from-[#06D6A0] to-teal-500 text-white shadow-lg shadow-[#06D6A0]/20"
+                  : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20"
               }`}
             >
               <Icon className="w-3 h-3" />
               {label}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {loading ? (
         <LoadingState />
       ) : (
-        <DataTable 
-          columns={columns} 
-          rows={filteredUsers} 
-          emptyMessage={
-            searchTerm 
-              ? `No users found matching "${searchTerm}"` 
-              : filter !== "all" 
-                ? `No ${filter} users found.` 
-                : "No users found."
-          } 
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={filter + searchTerm}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={fadeInUp}
+          >
+            <DataTable 
+              columns={columns} 
+              rows={filteredUsers} 
+              emptyMessage={
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-12"
+                >
+                  <UsersIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                    {searchTerm 
+                      ? `No users found matching "${searchTerm}"` 
+                      : filter !== "all" 
+                        ? `No ${filter} users found.` 
+                        : "No users found."}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {searchTerm 
+                      ? "Try adjusting your search term." 
+                      : filter !== "all" 
+                        ? `No users with role "${filter}" found.` 
+                        : "Users will appear here once they register."}
+                  </p>
+                </motion.div>
+              }
+            />
+          </motion.div>
+        </AnimatePresence>
       )}
     </AdminLayout>
   )
