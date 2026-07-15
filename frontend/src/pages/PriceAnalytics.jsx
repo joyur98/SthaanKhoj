@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList
@@ -58,21 +59,58 @@ function Skeleton({ className = "" }) {
   return <div className={`animate-pulse bg-gray-200 dark:bg-white/10 rounded-xl ${className}`} />
 }
 
+// ── Animation variants ──────────────────────────────────────────────────
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } 
+  }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const scaleOnHover = {
+  whileHover: { scale: 1.02, transition: { duration: 0.2 } }
+}
+
 // ── Stat Card ──────────────────────────────────────────────────────────────
-function StatCard({ icon, label, value, sub, color }) {
+function StatCard({ icon, label, value, sub, color, delay = 0 }) {
   return (
-    <div className="bg-white dark:bg-dark-900/60 rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md ${color}`}>
+    <motion.div
+      variants={fadeInUp}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="bg-white dark:bg-dark-900/60 rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm flex items-center gap-4 hover:shadow-lg transition-shadow duration-300"
+    >
+      <motion.div 
+        whileHover={{ scale: 1.1, rotate: -5 }}
+        className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md ${color}`}
+      >
         {icon}
-      </div>
+      </motion.div>
       <div className="min-w-0">
         <p className="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide">{label}</p>
-        <p className="font-display text-2xl font-extrabold text-gray-900 dark:text-white leading-tight tabular-nums truncate">
+        <motion.p 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, delay: delay + 0.2 }}
+          className="font-display text-2xl font-extrabold text-gray-900 dark:text-white leading-tight tabular-nums truncate"
+        >
           {value}
-        </p>
+        </motion.p>
         {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">{sub}</p>}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -85,25 +123,39 @@ const ACCENT_BAR = {
   indigo: "bg-indigo-400",
   neutral: "bg-gray-300 dark:bg-white/20",
 }
-function ChartCard({ title, subtitle, accent = "neutral", children }) {
+
+function ChartCard({ title, subtitle, accent = "neutral", children, delay = 0 }) {
   return (
-    <div className="bg-white dark:bg-dark-900/60 rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+    <motion.div
+      variants={fadeInUp}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-white dark:bg-dark-900/60 rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg transition-shadow duration-300"
+    >
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <div className={`w-1 h-4 rounded-full ${ACCENT_BAR[accent]}`} />
+          <motion.div 
+            initial={{ scale: 0, height: 0 }}
+            animate={{ scale: 1, height: 16 }}
+            transition={{ type: "spring", stiffness: 300, delay: delay + 0.1 }}
+            className={`w-1 h-4 rounded-full ${ACCENT_BAR[accent]}`} 
+          />
           <h3 className="font-display text-sm font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>
         </div>
         {subtitle && <p className="text-xs text-gray-400 dark:text-gray-500 ml-3">{subtitle}</p>}
       </div>
       {children}
-    </div>
+    </motion.div>
   )
 }
 
 // ── Live indicator ─────────────────────────────────────────────────────────
 function LiveBadge({ lastUpdated }) {
   return (
-    <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500"
+    >
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -114,7 +166,7 @@ function LiveBadge({ lastUpdated }) {
           · updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -157,7 +209,13 @@ function RankedAreaList({ data, direction = "desc", highlightLabel, accent = "em
           const pct = Math.max(raw, 4)
           const isTop = i === 0
           return (
-            <div key={loc.area} className="group">
+            <motion.div 
+              key={loc.area} 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.4 }}
+              className="group"
+            >
               <div className="flex items-baseline justify-between mb-1.5 gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`text-[10px] font-black tabular-nums shrink-0 ${isTop ? rankClasses : "text-gray-300 dark:text-gray-600"}`}>
@@ -167,9 +225,14 @@ function RankedAreaList({ data, direction = "desc", highlightLabel, accent = "em
                     {loc.area}
                   </span>
                   {isTop && highlightLabel && (
-                    <span className={`shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${tagClasses}`}>
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, delay: 0.3 }}
+                      className={`shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${tagClasses}`}
+                    >
                       {highlightLabel}
-                    </span>
+                    </motion.span>
                   )}
                 </div>
                 <span className="text-xs font-black text-gray-900 dark:text-white tabular-nums shrink-0">
@@ -178,22 +241,23 @@ function RankedAreaList({ data, direction = "desc", highlightLabel, accent = "em
               </div>
 
               <div className="relative h-2.5 rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-[width] duration-700 ease-out"
+                <motion.div
+                  className="h-full rounded-full"
                   style={{
-                    width: revealed ? `${pct}%` : "0%",
-                    transitionDelay: `${i * 70}ms`,
                     background: isTop ? topGradient : "linear-gradient(90deg, #0d9488, #059669)",
                     boxShadow: isTop ? `0 0 10px ${glow}` : "none",
                     opacity: isTop ? 1 : 0.85,
                   }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: revealed ? `${pct}%` : "0%" }}
+                  transition={{ duration: 0.7, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
                 />
               </div>
 
               <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                 {loc.count} listing{loc.count !== 1 ? "s" : ""}
               </p>
-            </div>
+            </motion.div>
           )
         })}
       </div>
@@ -212,7 +276,11 @@ function DonutStat({ data, colorFor, centerValue, centerLabel, emptyMessage }) {
     return <p className="text-xs text-gray-400 text-center py-10">{emptyMessage}</p>
   }
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="relative" style={{ height: 190 }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -224,32 +292,38 @@ function DonutStat({ data, colorFor, centerValue, centerLabel, emptyMessage }) {
             <Tooltip formatter={(v, n) => [`${v} listing${v !== 1 ? "s" : ""}`, n]} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
+          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        >
           <span className="font-display text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">
             {centerValue}
           </span>
           <span className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">{centerLabel}</span>
-        </div>
+        </motion.div>
       </div>
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-3">
         {data.map((d, i) => (
-          <div key={d.name} className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+          <motion.div 
+            key={d.name} 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400"
+          >
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: colorFor(d.name, i) }} />
             <span className="font-semibold text-gray-700 dark:text-gray-200">{d.name}</span>
             <span className="text-gray-400">· {d.value}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-// ── Rental Price Distribution (histogram) ────────────────────────────────
-// Buckets are built purely from `properties.price` already in memory — no
-// new data source. The first four buckets are fixed at the everyday
-// student-budget breakpoints; anything above Rs. 20K only gets split into
-// extra buckets when the spread is large enough that a single "20K+" bucket
-// would hide the shape of the high end (e.g. one outlier at Rs. 30 lakh).
+// ── Rental Price Distribution ────────────────────────────────────────────────
 const fmtBucketK = (v) => (v % 1000 === 0 ? `${v / 1000}K` : `${(v / 1000).toFixed(1)}K`)
 
 const niceNumber = (x) => {
@@ -282,7 +356,7 @@ function buildPriceHistogram(properties) {
         edge += step
         generated.push(edge)
       }
-      generated[generated.length - 1] = Infinity // final bucket always stays open-ended
+      generated[generated.length - 1] = Infinity
       topEdges = generated
     }
   }
@@ -299,7 +373,6 @@ function buildPriceHistogram(properties) {
   return { buckets, total: prices.length }
 }
 
-// Concise, data-derived insight sentence — no hardcoded copy.
 function buildDistributionInsight(buckets, total) {
   if (!total || !buckets.length) return ""
 
@@ -327,8 +400,6 @@ function buildDistributionInsight(buckets, total) {
   return "Rental prices are fairly spread out, with no single range dominating."
 }
 
-// Rounded-top bar with a minimum visible height so a bucket with just 1-2
-// listings doesn't disappear next to a bucket with 10.
 function RoundedTopBar(props) {
   const { x, y, width, height, fill } = props
   const radius = Math.min(8, width / 2)
@@ -406,10 +477,15 @@ function PriceDistributionCard({ properties }) {
           </ResponsiveContainer>
 
           {insight && (
-            <div className="mt-4 pt-3 border-t border-gray-50 dark:border-white/5 flex items-start gap-2">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-4 pt-3 border-t border-gray-50 dark:border-white/5 flex items-start gap-2"
+            >
               <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{insight}</p>
-            </div>
+            </motion.div>
           )}
         </>
       )}
@@ -419,6 +495,7 @@ function PriceDistributionCard({ properties }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function PriceAnalytics() {
+  const reduceMotion = useReducedMotion()
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -508,10 +585,20 @@ export default function PriceAnalytics() {
       <div className="max-w-6xl mx-auto px-4 py-10 pb-28">
 
         {/* Page header */}
-        <div className="mb-8 flex items-end justify-between flex-wrap gap-2">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          className="mb-8 flex items-end justify-between flex-wrap gap-2"
+        >
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-6 rounded-full bg-emerald-500" />
+              <motion.div 
+                initial={{ scale: 0, height: 0 }}
+                animate={{ scale: 1, height: 24 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="w-1.5 h-6 rounded-full bg-emerald-500" 
+              />
               <h1 className="font-display text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Rental Analytics
               </h1>
@@ -521,12 +608,16 @@ export default function PriceAnalytics() {
             </p>
           </div>
           <LiveBadge lastUpdated={lastUpdated} />
-        </div>
+        </motion.div>
 
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400 font-semibold">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="mb-6 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400 font-semibold"
+          >
             ⚠ {error}
-          </div>
+          </motion.div>
         )}
 
         {/* ── Stat cards ── */}
@@ -535,13 +626,19 @@ export default function PriceAnalytics() {
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         ) : stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          >
             <StatCard
               icon={<HomeIcon />}
               label="Total Listings"
               value={stats.total}
               sub={`${stats.available} available now`}
               color="bg-sky-500"
+              delay={0}
             />
             <StatCard
               icon={<BarsIcon />}
@@ -549,6 +646,7 @@ export default function PriceAnalytics() {
               value={formatBigRs(stats.avg)}
               sub={isCompact(stats.avg) ? `${formatPrice(stats.avg)} / mo` : "per month"}
               color="bg-emerald-500"
+              delay={0.05}
             />
             <StatCard
               icon={<ArrowDownIcon />}
@@ -556,6 +654,7 @@ export default function PriceAnalytics() {
               value={formatBigRs(stats.min)}
               sub={isCompact(stats.min) ? formatPrice(stats.min) : "cheapest listing"}
               color="bg-teal-500"
+              delay={0.1}
             />
             <StatCard
               icon={<ArrowUpIcon />}
@@ -563,19 +662,25 @@ export default function PriceAnalytics() {
               value={formatBigRs(stats.max)}
               sub={isCompact(stats.max) ? formatPrice(stats.max) : "priciest listing"}
               color="bg-amber-500"
+              delay={0.15}
             />
-          </div>
+          </motion.div>
         )}
 
-        {/* ── Rental Price Distribution — placed right after KPIs, before trend charts ── */}
+        {/* ── Rental Price Distribution ── */}
         {loading ? (
           <div className="mb-6">
             <Skeleton className="h-80" />
           </div>
         ) : (
-          <div className="mb-6">
+          <motion.div 
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="mb-6"
+          >
             <PriceDistributionCard properties={properties} />
-          </div>
+          </motion.div>
         )}
 
         {/* ── Charts grid ── */}
@@ -584,12 +689,20 @@ export default function PriceAnalytics() {
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-72" />)}
           </div>
         ) : !stats ? (
-          <div className="bg-white dark:bg-dark-900/60 rounded-2xl p-10 border border-gray-100 dark:border-white/5 shadow-sm text-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-dark-900/60 rounded-2xl p-10 border border-gray-100 dark:border-white/5 shadow-sm text-center"
+          >
             <p className="text-sm text-gray-400">No listings with price data yet.</p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <ChartCard
               title="Average Rent by Area"
               subtitle="Comparing localities around KU, ranked highest to lowest"
@@ -633,13 +746,17 @@ export default function PriceAnalytics() {
             >
               <RankedAreaList data={byLocation} direction="asc" highlightLabel="Cheapest" accent="emerald" />
             </ChartCard>
-
-          </div>
+          </motion.div>
         )}
 
         {/* ── Recently Added Listings ── */}
         {!loading && stats && (
-          <div className="grid grid-cols-1 gap-6 mt-6">
+          <motion.div 
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 gap-6 mt-6"
+          >
             <ChartCard
               title="Recently Added Listings"
               subtitle="Newest rooms posted on SthaanKhoj"
@@ -649,17 +766,21 @@ export default function PriceAnalytics() {
                 <p className="text-xs text-gray-400 text-center py-10">No listings yet.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                  {recentListings.map((p) => {
+                  {recentListings.map((p, idx) => {
                     const type = p.roomType ? capitalize(p.roomType) : "Room"
                     return (
-                      <div
+                      <motion.div
                         key={p.id}
-                        className="flex items-center justify-between border-b border-gray-50 dark:border-white/5 py-3"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="flex items-center justify-between border-b border-gray-50 dark:border-white/5 py-3 hover:bg-gray-50 dark:hover:bg-white/5 px-2 rounded-lg transition-colors duration-200"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span
+                          <motion.span
                             className="w-2 h-2 rounded-full shrink-0"
                             style={{ background: roomTypeColor(type, 0) }}
+                            whileHover={{ scale: 1.5 }}
                           />
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
@@ -676,18 +797,23 @@ export default function PriceAnalytics() {
                         <span className="text-xs font-black text-gray-900 dark:text-white tabular-nums shrink-0 ml-3">
                           {p.price ? formatPrice(p.price) : "—"}
                         </span>
-                      </div>
+                      </motion.div>
                     )
                   })}
                 </div>
               )}
             </ChartCard>
-          </div>
+          </motion.div>
         )}
 
-        <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-10">
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center text-xs text-gray-300 dark:text-gray-600 mt-10"
+        >
           Data sourced from live SthaanKhoj listings · Updates in real-time
-        </p>
+        </motion.p>
 
       </div>
     </div>
