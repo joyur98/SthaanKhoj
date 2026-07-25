@@ -30,7 +30,11 @@ function Login({ darkMode }) {
         setSubmitted(false)
         return false
       }
-      navigate("/home")
+      if (savedRole === "admin") {
+        navigate("/admin/dashboard")
+      } else {
+        navigate("/home")
+      }
       return true
     } catch (err) {
       console.error("Verify error:", err)
@@ -144,8 +148,11 @@ function Login({ darkMode }) {
         setSubmitted(false)
         return
       }
-
-      navigate("/home")
+      if (data.role === "admin") {
+        navigate("/admin/dashboard")
+      } else {
+        navigate("/home")
+      }
     } catch (err) {
       console.error("Google sign-in error:", err)
       if (err.code !== "auth/popup-closed-by-user") {
@@ -239,7 +246,15 @@ function Login({ darkMode }) {
           {/* Role Toggle */}
           <div className="relative p-1 bg-gray-50 dark:bg-dark-950 border border-gray-100 dark:border-white/5 rounded-2xl flex items-center mb-8">
             <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-dark-950 dark:bg-primary-600 rounded-xl shadow-md transition-all duration-500 ease-out ${role === "student" ? "left-1" : "left-[50%]"}`}
+              className="absolute top-1 bottom-1 bg-dark-950 dark:bg-primary-600 rounded-xl shadow-md transition-all duration-500 ease-out"
+              style={{
+                width: "calc(33.333% - 2.67px)",
+                left: role === "student"
+                  ? "4px"
+                  : role === "landlord"
+                    ? "calc(33.333% + 1.33px)"
+                    : "calc(66.666% - 1.33px)"
+              }}
             ></div>
             <button
               type="button"
@@ -254,6 +269,13 @@ function Login({ darkMode }) {
               className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide rounded-xl flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer ${role === "landlord" ? "text-white" : "text-gray-500 dark:text-gray-400 hover:text-dark-955 dark:hover:text-white"}`}
             >
               <span>🏠</span> Landlord
+            </button>
+            <button
+              type="button"
+              onClick={() => { setRole("admin"); setError("") }}
+              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide rounded-xl flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer ${role === "admin" ? "text-white" : "text-gray-500 dark:text-gray-400 hover:text-dark-955 dark:hover:text-white"}`}
+            >
+              <span>🛡️</span> Admin
             </button>
           </div>
 
@@ -286,7 +308,7 @@ function Login({ darkMode }) {
                 onChange={handleChange}
                 onFocus={() => setFocused("email")}
                 onBlur={() => setFocused("")}
-                placeholder={role === "student" ? "" : "landlord@example.com"}
+                placeholder={role === "student" ? "" : role === "landlord" ? "landlord@example.com" : "admin@example.com"}
                 required
                 className={`w-full px-4 py-3.5 bg-gray-50/50 hover:bg-gray-50/80 dark:bg-dark-950 dark:hover:bg-dark-950/80 rounded-2xl border text-sm font-medium tracking-wide outline-none transition-all duration-300 text-black dark:text-white ${focused === "email"
                   ? "border-primary-500 bg-white dark:bg-dark-900 shadow-[0_0_0_4px_rgba(16,185,129,0.1)] ring-1 ring-primary-500"
@@ -347,7 +369,7 @@ function Login({ darkMode }) {
                   Signing you in...
                 </span>
               ) : (
-                `Sign in as ${role === "student" ? "Student" : "Landlord"}`
+                `Sign in as ${role === "student" ? "Student" : role === "landlord" ? "Landlord" : "Admin"}`
               )}
             </button>
 
