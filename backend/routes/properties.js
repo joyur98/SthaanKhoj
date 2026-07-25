@@ -26,6 +26,9 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
+    // Filter out properties that are not available (booked/occupied)
+    properties = properties.filter((p) => p.isAvailable !== false);
+
     if (minPrice) {
       const min = parseFloat(minPrice);
       properties = properties.filter((p) => p.price >= min);
@@ -39,6 +42,32 @@ router.get("/", paginationRules, validate, async (req, res, next) => {
       const loc = location.toLowerCase();
       properties = properties.filter((p) => p.location?.toLowerCase().includes(loc));
     }
+
+    // ── Enrich with landlord info ────────────────────────────────────────────
+    const landlordIds = [...new Set(properties.map((p) => p.landlordId).filter(Boolean))];
+    const landlordMap = {};
+
+    // Firestore getAll supports up to ~10 refs per batch in practice,
+    // but we'll use Promise.all with individual gets for simplicity
+    if (landlordIds.length > 0) {
+      const landlordRefs = landlordIds.map((id) => db.collection("users").doc(id));
+      const landlordSnaps = await db.getAll(...landlordRefs);
+      landlordSnaps.forEach((snap) => {
+        if (snap.exists) {
+          const data = snap.data();
+          landlordMap[snap.id] = {
+            name: data.fullName || data.displayName || null,
+            phone: data.phone || null,
+          };
+        }
+      });
+    }
+
+    properties = properties.map((p) => ({
+      ...p,
+      landlordName: landlordMap[p.landlordId]?.name || null,
+      landlordPhone: landlordMap[p.landlordId]?.phone || null,
+    }));
 
     const lastDoc = snap.docs[snap.docs.length - 1];
     res.json({
@@ -66,6 +95,9 @@ router.post("/chatbot-search", async (req, res, next) => {
 
     const snap = await query.get();
     let properties = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // Filter out properties that are not available (booked/occupied)
+    properties = properties.filter((p) => p.isAvailable !== false);
 
     if (minPrice) {
       const min = parseFloat(minPrice);
@@ -102,6 +134,29 @@ router.post("/chatbot-search", async (req, res, next) => {
       allSnap.docs.map((d) => d.data().location).filter(Boolean)
     )];
 
+    // ── Enrich with landlord info ────────────────────────────────────────────
+    const landlordIds = [...new Set(properties.map((p) => p.landlordId).filter(Boolean))];
+    const landlordMap = {};
+    if (landlordIds.length > 0) {
+      const landlordRefs = landlordIds.map((id) => db.collection("users").doc(id));
+      const landlordSnaps = await db.getAll(...landlordRefs);
+      landlordSnaps.forEach((snap) => {
+        if (snap.exists) {
+          const data = snap.data();
+          landlordMap[snap.id] = {
+            name: data.fullName || data.displayName || null,
+            phone: data.phone || null,
+          };
+        }
+      });
+    }
+
+    properties = properties.map((p) => ({
+      ...p,
+      landlordName: landlordMap[p.landlordId]?.name || null,
+      landlordPhone: landlordMap[p.landlordId]?.phone || null,
+    }));
+
     res.json({
       data: properties,
       meta: {
@@ -120,7 +175,19 @@ router.get("/:id", async (req, res, next) => {
     if (!snap.exists || !snap.data().isActive) {
       return res.status(404).json({ error: "Property not found." });
     }
-    res.json({ id: snap.id, ...snap.data() });
+    const property = { id: snap.id, ...snap.data() };
+
+    // Enrich with landlord info
+    if (property.landlordId) {
+      const landlordSnap = await db.collection("users").doc(property.landlordId).get();
+      if (landlordSnap.exists) {
+        const ld = landlordSnap.data();
+        property.landlordName = ld.fullName || ld.displayName || null;
+        property.landlordPhone = ld.phone || null;
+      }
+    }
+
+    res.json(property);
   } catch (err) {
     next(err);
   }

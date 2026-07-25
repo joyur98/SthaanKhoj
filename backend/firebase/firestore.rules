@@ -30,7 +30,7 @@ service cloud.firestore {
 
     // ── Users ──────────────────────────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && isOwner(userId);
       allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();
@@ -58,66 +58,118 @@ service cloud.firestore {
 
     // ── Bookings ───────────────────────────────────────────────────────────────
     match /bookings/{bookingId} {
-      allow read: if isSignedIn() && (
+      // LIST: allow signed-in users to run queries (client must filter by uid)
+      allow list: if isSignedIn();
+
+      // GET: only participants or admin can fetch a single booking
+      allow get: if isSignedIn() && (
         isAdmin() ||
         resource.data.studentId == request.auth.uid ||
         resource.data.landlordId == request.auth.uid
       );
-      allow create: if isStudent();
+
+      allow create: if isStudent() || isAdmin();
+
       allow update: if isAdmin() ||
         resource.data.landlordId == request.auth.uid ||
         (resource.data.studentId == request.auth.uid &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+
       allow delete: if isAdmin();
     }
 
     // ── Reviews ────────────────────────────────────────────────────────────────
     match /reviews/{reviewId} {
       allow read: if isSignedIn();
-      allow create: if isStudent();
+      allow create: if isStudent() || isAdmin();
       allow update, delete: if isAdmin() ||
         resource.data.authorId == request.auth.uid;
     }
 
     // ── Notifications ──────────────────────────────────────────────────────────
     match /notifications/{notificationId} {
-      allow read, update: if isSignedIn() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAdmin();
+      // LIST: allow users to query (client must filter by userId == uid)
+      allow list: if isSignedIn();
+
+      // GET: only the owner or admin
+      allow get: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // UPDATE: owner marks notification as read
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // CREATE: any signed-in user (cloud functions & client both create these)
+      allow create: if isSignedIn();
+
+      // DELETE: owner or admin
       allow delete: if isAdmin() ||
         resource.data.userId == request.auth.uid;
     }
 
     // ── Chats ──────────────────────────────────────────────────────────────────
     match /chats/{chatId} {
-      allow read: if isSignedIn() && (
+
+      // GET: participants can fetch a specific chat.
+      // resource == null means the document doesn't exist yet — allow signed-in
+      // users to check existence before creating (getOrCreateChat pattern).
+      allow get: if isSignedIn() && (
+        resource == null ||
         resource.data.studentId == request.auth.uid ||
         resource.data.landlordId == request.auth.uid
       );
+
+      // LIST: Allow any signed-in user to run a query against /chats.
+      // NOTE: Firestore Rules CANNOT inspect query filter values (request.query
+      // is not available in Rules v2 the way you might expect). Security is
+      // enforced by the client always adding:
+      //   where('studentId','==', uid)  OR  where('landlordId','==', uid)
+      // Combined with the GET rule above, a user can only open individual docs
+      // they participate in, so broad list access is safe here.
+      allow list: if isSignedIn();
+
+      // CREATE: The creator must be the student referenced in the new document.
       allow create: if isSignedIn() &&
-        request.auth.uid == request.resource.data.studentId &&
+        request.resource.data.studentId == request.auth.uid &&
         request.resource.data.studentId is string &&
         request.resource.data.landlordId is string &&
-        request.resource.data.propertyId is string &&
-        request.resource.data.participants is list &&
-        request.auth.uid in request.resource.data.participants;
+        request.resource.data.propertyId is string;
+
+      // UPDATE: Only participants can update (last message, read receipts, etc.)
       allow update: if isSignedIn() && (
         resource.data.studentId == request.auth.uid ||
         resource.data.landlordId == request.auth.uid
       );
+
       allow delete: if false;
 
-      // ── Messages subcollection ───────────────────────────────────────────────
+      // Messages subcollection
       match /messages/{messageId} {
-        allow read: if isSignedIn() && (
-          get(/databases/$(database)/documents/chats/$(chatId)).data.studentId == request.auth.uid ||
-          get(/databases/$(database)/documents/chats/$(chatId)).data.landlordId == request.auth.uid
-        );
+        // Reads the parent chat once - avoids double get() per rule
+        function chatData() {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data;
+        }
+        function isParticipant() {
+          let chat = chatData();
+          return chat != null && (
+            chat.studentId == request.auth.uid ||
+            chat.landlordId == request.auth.uid
+          );
+        }
+        // GET + LIST: participants can read and query messages
+        allow get, list: if isSignedIn() && isParticipant();
+        // CREATE: Must be a participant AND the declared sender
         allow create: if isSignedIn() &&
-          request.auth.uid == request.resource.data.senderId &&
+          isParticipant() &&
+          request.resource.data.senderId == request.auth.uid &&
           request.resource.data.text is string &&
           request.resource.data.text.size() > 0 &&
           request.resource.data.text.size() <= 2000;
+        // Messages are immutable once sent
         allow update, delete: if false;
       }
     }

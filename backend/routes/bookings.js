@@ -60,9 +60,11 @@ router.get("/my", requireStudent, async (req, res, next) => {
     const snap = await db
       .collection("bookings")
       .where("studentId", "==", req.user.uid)
-      .orderBy("createdAt", "desc")
       .get();
-    res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const bookings = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // Sort in memory to bypass composite index requirement
+    bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(bookings);
   } catch (err) {
     next(err);
   }
@@ -105,18 +107,6 @@ router.patch("/:id/cancel", requireStudent, async (req, res, next) => {
     }
     await ref.update({ status: "cancelled", updatedAt: new Date().toISOString() });
     res.json({ message: "Booking cancelled." });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/**
- * GET /api/bookings   (admin only)
- */
-router.get("/", requireAdmin, async (req, res, next) => {
-  try {
-    const snap = await db.collection("bookings").orderBy("createdAt", "desc").limit(100).get();
-    res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   } catch (err) {
     next(err);
   }

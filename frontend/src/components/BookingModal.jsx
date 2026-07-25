@@ -41,7 +41,7 @@ export default function BookingModal({ room, onClose, onSubmit }) {
     !profileLoading && !profileError && (!profile?.fullName || !profile?.phone)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
       <div className="w-full max-w-md bg-white dark:bg-dark-900 border border-gray-100/70 dark:border-white/5 rounded-[28px] p-6 shadow-2xl">
         <div className="flex items-start justify-between mb-4">
           <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">

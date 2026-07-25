@@ -3,16 +3,18 @@ import rateLimit from "express-rate-limit";
 import { auth, db } from "../firebase/firebaseAdmin.js";
 import { authenticate } from "../middleware/auth.js";
 import { registerRules, validate } from "../middleware/validate.js";
+import { promoteDesignatedAdmin } from "../services/adminBootstrap.js";
 
 const router = Router();
 
 const ALLOWED_SELF_ROLES = ["student", "landlord"]; // never "admin" — admins are bootstrapped out-of-band
 const ALLOWED_ROLES = ["student", "landlord", "admin"];
 
-// Stricter limiter for auth endpoints
+// Stricter limiter for auth endpoints (relaxed in dev)
+const isDev = process.env.NODE_ENV !== "production";
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isDev ? 100 : 20,
   message: { error: "Too many auth attempts, please try again later." },
 });
 
@@ -162,11 +164,24 @@ router.post("/google-signin", authLimiter, authenticate, async (req, res, next) 
  * Lightweight endpoint the frontend can use to validate a token and get user info.
  */
 router.post("/verify-token", authenticate, async (req, res) => {
-  res.json({
-    uid:   req.user.uid,
-    email: req.user.email,
-    role:  req.user.role || req.userDoc?.role || req.resolvedRole,
-  });
+  try {
+    await promoteDesignatedAdmin(req.user.uid, req.user.email);
+
+    const userSnap = await db.collection("users").doc(req.user.uid).get();
+    const role =
+      userSnap.data()?.role ||
+      req.user.role ||
+      req.userDoc?.role ||
+      req.resolvedRole;
+
+    res.json({
+      uid:   req.user.uid,
+      email: req.user.email,
+      role,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to verify token." });
+  }
 });
 
 /**
@@ -197,6 +212,30 @@ router.post("/set-role", authenticate, async (req, res, next) => {
     await db.collection("users").doc(targetUid).update({ role, updatedAt: new Date().toISOString() });
 
     res.json({ message: `Role updated to '${role}' for user ${targetUid}.` });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * POST /api/auth/generate-verification-link
+ * Generates a verification link for the authenticated user.
+ */
+router.post("/generate-verification-link", authenticate, async (req, res, next) => {
+  try {
+    const email = req.user.email;
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in token." });
+    }
+
+    const actionCodeSettings = {
+      url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
+      handleCodeInApp: false,
+    };
+
+    const link = await auth.generateEmailVerificationLink(email, actionCodeSettings);
+
+    res.json({ link });
   } catch (err) {
     next(err);
   }

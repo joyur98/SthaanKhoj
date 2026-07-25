@@ -12,6 +12,17 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Debug check - remove once everything works
+if (!firebaseConfig.apiKey) {
+  console.error(
+    "🔥 Firebase config is missing values. Got:",
+    firebaseConfig
+  );
+  throw new Error(
+    "Firebase apiKey is undefined. Check that your .env file exists in the project root, variables are prefixed with VITE_, and you restarted the dev server."
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);

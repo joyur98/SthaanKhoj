@@ -29,7 +29,10 @@ function AIChatbot({ darkMode }) {
 
   // ── Voice search state ────────────────────────────────────────────────
   const [isListening, setIsListening] = useState(false)
-  const [voiceSupported, setVoiceSupported] = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(() => {
+    const SpeechRecognition = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition)
+    return !!SpeechRecognition
+  })
   const recognitionRef = useRef(null)
 
   const messagesEndRef = useRef(null)
@@ -47,8 +50,10 @@ function AIChatbot({ darkMode }) {
 
   useEffect(() => {
     if (isOpen) {
-      setHasUnread(false)
-      setTimeout(() => inputRef.current?.focus(), 300)
+      setTimeout(() => {
+        setHasUnread(false)
+        inputRef.current?.focus()
+      }, 300)
     }
   }, [isOpen])
 
@@ -113,10 +118,7 @@ function AIChatbot({ darkMode }) {
   // ── Voice search setup ────────────────────────────────────────────────
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      setVoiceSupported(false)
-      return
-    }
+    if (!SpeechRecognition) return
 
     const recognition = new SpeechRecognition()
     recognition.continuous = false

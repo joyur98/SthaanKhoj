@@ -57,28 +57,21 @@ export const sendMessage = async (chatId, senderId, text) => {
     throw new Error("Missing chatId, senderId, or message text")
   }
 
-  const chatRef = doc(db, "chats", chatId)
-  const chatSnap = await getDoc(chatRef)
-
-  if (!chatSnap.exists()) {
-    throw new Error("Chat does not exist")
-  }
-
-  const chat = chatSnap.data()
-
-  if (senderId !== chat.studentId && senderId !== chat.landlordId) {
-    throw new Error("You are not allowed to send messages in this chat")
-  }
-
-  const isStudent = senderId === chat.studentId
   const messagesRef = collection(db, "chats", chatId, "messages")
+  const chatRef = doc(db, "chats", chatId)
 
+  // Write the message — Firestore rules enforce that senderId must be a chat participant
   await addDoc(messagesRef, {
     senderId,
     text: cleanText,
     createdAt: serverTimestamp(),
     read: false,
   })
+
+  // Determine role for unread counter by checking who the student is
+  const chatSnap = await getDoc(chatRef)
+  const chat = chatSnap.exists() ? chatSnap.data() : null
+  const isStudent = chat ? senderId === chat.studentId : true
 
   await updateDoc(chatRef, {
     lastMessage: cleanText,

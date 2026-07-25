@@ -8,6 +8,7 @@ import { getOrCreateChat } from "../services/chatService"
 import ReviewSection from "../components/ReviewSection"
 import BookingModal from "../components/BookingModal"
 import { createBooking, getStudentBookings } from "../services/bookingService"
+import { Phone, User } from "lucide-react"
 
 const KU_LAT = 27.620532425085997
 const KU_LNG = 85.53841251986667
@@ -37,6 +38,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   const [error, setError] = useState("")
   const [activeImg, setActiveImg] = useState(0)
   const [chatLoading, setChatLoading] = useState(false)
+  const [chatError, setChatError] = useState("")
 
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
@@ -63,7 +65,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   const handleContactLandlord = async () => {
     if (!user || !room) return
     if (!room.landlordId) return
-
+    setChatError("")
     try {
       setChatLoading(true)
       const chatId = await getOrCreateChat(
@@ -75,6 +77,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
       navigate(`/chat/${chatId}`)
     } catch (err) {
       console.error("getOrCreateChat error:", err)
+      setChatError("Could not open chat. Please try again.")
     } finally {
       setChatLoading(false)
     }
@@ -218,6 +221,24 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                       {room.description}
                     </p>
+
+                    {/* ✅ LANDLORD INFO - ADDED HERE */}
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/10">
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-500 dark:text-gray-400">Posted by:</span>
+                        <span className="font-semibold text-gray-800 dark:text-white">
+                          {room.landlordName || "Unknown Landlord"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm mt-1">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-500 dark:text-gray-400">📞</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {room.landlordPhone || "Phone not provided"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {room.amenities?.length > 0 && (
@@ -273,6 +294,9 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                       >
                         {chatLoading ? "Opening chat..." : "Contact Landlord"}
                       </button>
+                      {chatError && (
+                        <p className="text-xs font-semibold text-red-500 text-center mt-1">{chatError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
