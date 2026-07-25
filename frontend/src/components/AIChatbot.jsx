@@ -115,7 +115,18 @@ function AIChatbot({ darkMode }) {
     }
   }
 
+  // Refs to avoid stale closures in voice search callbacks
+  const handleSendRef = useRef(handleSend)
+  const addMessageRef = useRef(addMessage)
+
+  useEffect(() => {
+    handleSendRef.current = handleSend
+    addMessageRef.current = addMessage
+  })
+
   // ── Voice search setup ────────────────────────────────────────────────
+  const voiceTimeoutRef = useRef(null)
+
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return
@@ -127,6 +138,12 @@ function AIChatbot({ darkMode }) {
     recognition.maxAlternatives = 1
 
     recognition.onresult = (event) => {
+      // Clear safety timeout on any result
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current)
+        voiceTimeoutRef.current = null
+      }
+
       let transcript = ""
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript
@@ -135,29 +152,55 @@ function AIChatbot({ darkMode }) {
 
       // If it's a final result, auto-send
       if (event.results[event.results.length - 1].isFinal) {
-        handleSend(transcript)
+        handleSendRef.current(transcript)
         setIsListening(false)
       }
     }
 
     recognition.onerror = (event) => {
+      // Clear safety timeout on error
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current)
+        voiceTimeoutRef.current = null
+      }
+
       setIsListening(false)
       if (event.error === "not-allowed" || event.error === "permission-denied") {
-        addMessage({
+        addMessageRef.current({
           role: "bot",
           text: "I need microphone access to hear you 🎤. Please allow mic permission and try again.",
           suggestions: ["Help"],
         })
       } else if (event.error === "no-speech") {
-        addMessage({
+        addMessageRef.current({
           role: "bot",
           text: "I didn't catch that 🤔. Try speaking again after tapping the mic.",
           suggestions: [],
+        })
+      } else if (event.error === "network") {
+        // Brave and other browsers that block Google's speech service throw "network"
+        addMessageRef.current({
+          role: "bot",
+          text: "⚠️ **Voice not available**: Your browser blocked the speech recognition service. This usually happens in **Brave** or browsers that disable Google's Web Speech API for privacy.\n\n**To fix this:**\n• Use **Google Chrome** or **Microsoft Edge** instead\n• Or press **Windows Key + H** to use your OS dictation feature\n• In Brave: go to `brave://settings/` → Search \"Web Speech\" → Enable it",
+          suggestions: ["Help"],
+        })
+      } else if (event.error === "aborted") {
+        // User or timeout cancelled — no message needed
+      } else {
+        addMessageRef.current({
+          role: "bot",
+          text: `Voice recognition error: ${event.error}. Please try again or type your query instead.`,
+          suggestions: ["Help"],
         })
       }
     }
 
     recognition.onend = () => {
+      // Clear safety timeout on end
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current)
+        voiceTimeoutRef.current = null
+      }
       setIsListening(false)
     }
 
@@ -165,6 +208,9 @@ function AIChatbot({ darkMode }) {
     setVoiceSupported(true)
 
     return () => {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current)
+      }
       recognition.onresult = null
       recognition.onerror = null
       recognition.onend = null
@@ -176,6 +222,10 @@ function AIChatbot({ darkMode }) {
     if (!recognitionRef.current) return
 
     if (isListening) {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current)
+        voiceTimeoutRef.current = null
+      }
       recognitionRef.current.stop()
       setIsListening(false)
     } else {
@@ -183,6 +233,18 @@ function AIChatbot({ darkMode }) {
       try {
         recognitionRef.current.start()
         setIsListening(true)
+
+        // Safety timeout: if no result or error fires within 10s, stop and warn
+        voiceTimeoutRef.current = setTimeout(() => {
+          voiceTimeoutRef.current = null
+          try { recognitionRef.current?.stop() } catch (_) { /* ignore */ }
+          setIsListening(false)
+          addMessage({
+            role: "bot",
+            text: "⚠️ Voice recognition timed out — no speech was detected.\n\n**Possible causes:**\n• Your browser may block the Web Speech API (e.g. **Brave**)\n• Microphone might not be working\n• No speech was detected\n\n**Try:** Use **Google Chrome**, check your mic, or type your query instead.",
+            suggestions: ["Help"],
+          })
+        }, 10000)
       } catch (err) {
         // start() throws if called while already active — ignore
       }
