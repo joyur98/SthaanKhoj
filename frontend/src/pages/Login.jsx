@@ -78,7 +78,7 @@ function Login({ darkMode }) {
     }
   }
 
-  // Google Sign-in - FIXED: Uses dedicated googleSignIn endpoint
+  // Google Sign-in with retry logic for role propagation
   const handleGoogleSignIn = async () => {
     setError("")
     setSubmitted(true)
@@ -103,24 +103,49 @@ function Login({ darkMode }) {
         console.log("Google user synced with backend successfully")
       } catch (syncErr) {
         console.error("Google sync error:", syncErr)
-        // If sync fails but user might already exist, try verify
+        // Continue to verify even if sync fails — user might already exist
       }
       
-      // Verify role and redirect
-      try {
-        const data = await verifyToken()
-        const savedRole = data.role
-        if (savedRole && savedRole !== role) {
-          setError(`This account is registered as a ${savedRole}. Please select the correct role.`)
-          setSubmitted(false)
-          return
+      // ✅ RETRY LOGIC: Wait for role to propagate in Firebase + Firestore
+      let retries = 0
+      let data = null
+
+      while (retries < 4) {
+        try {
+          data = await verifyToken()
+          if (data?.role) {
+            console.log("✅ Role verified:", data.role)
+            break
+          }
+          retries++
+          if (retries < 4) {
+            console.log(`Retrying role verification (${retries}/3)...`)
+            await new Promise(r => setTimeout(r, 600))
+          }
+        } catch (err) {
+          console.error(`Verify attempt ${retries + 1} failed:`, err)
+          retries++
+          if (retries < 4) {
+            await new Promise(r => setTimeout(r, 600))
+          }
         }
-        navigate("/home")
-      } catch (verifyErr) {
-        console.error("Verify after Google error:", verifyErr)
-        setError("Could not verify account. Please try again.")
-        setSubmitted(false)
       }
+
+      // Check final result
+      if (!data?.role) {
+        setError("Could not verify your account. Please refresh the page and try again.")
+        setSubmitted(false)
+        return
+      }
+
+      // If role doesn't match, show error
+      if (data.role !== role) {
+        setError(`This account is registered as a ${data.role}. Please select the correct role.`)
+        setSubmitted(false)
+        return
+      }
+
+      navigate("/home")
     } catch (err) {
       console.error("Google sign-in error:", err)
       if (err.code !== "auth/popup-closed-by-user") {
@@ -333,7 +358,7 @@ function Login({ darkMode }) {
               <div className="flex-1 h-px bg-gray-100 dark:bg-white/5" />
             </div>
 
-            {/* Google Sign-in - FIXED */}
+            {/* Google Sign-in */}
             <button
               type="button"
               onClick={handleGoogleSignIn}
