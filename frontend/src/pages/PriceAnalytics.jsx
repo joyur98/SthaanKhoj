@@ -6,7 +6,7 @@ import {
 } from "recharts"
 import Navbar from "../components/Navbar"
 import { db } from "../firebase"
-import { collection, onSnapshot } from "firebase/firestore"
+import { collection, onSnapshot, query, where } from "firebase/firestore"
 
 // ── Formatting helpers ───────────────────────────────────────────────────
 const indianGroup = (numStr) => {
@@ -502,8 +502,14 @@ export default function PriceAnalytics() {
   const [lastUpdated, setLastUpdated] = useState(null)
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    // Only show active, available (non-booked) properties — mirrors the Find Rooms API filter
+    const q = query(
       collection(db, "properties"),
+      where("isActive", "==", true),
+      where("isAvailable", "==", true)
+    )
+    const unsubscribe = onSnapshot(
+      q,
       (snap) => {
         const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
         setProperties(data)
