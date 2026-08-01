@@ -10,8 +10,8 @@ import BookingModal from "../components/BookingModal"
 import { createBooking, getStudentBookings } from "../services/bookingService"
 import { Phone, User } from "lucide-react"
 
-const KU_LAT = 27.620532425085997
-const KU_LNG = 85.53841251986667
+const KU_LAT = 27.62056
+const KU_LNG = 85.53831
 
 const getDistanceFromKU = (lat, lng) => {
   if (!lat || !lng) return null
@@ -31,7 +31,7 @@ const getDistanceFromKU = (lat, lng) => {
 function RoomDetail({ darkMode, toggleDarkMode }) {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, role } = useAuth()
 
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -53,18 +53,29 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
   }, [id])
 
   useEffect(() => {
-    if (!user) return
-    getStudentBookings(user.uid).then((bookings) => {
-      const pending = bookings.some(
-        (b) => b.propertyId === id && b.status === "pending"
-      )
-      setHasPendingBooking(pending)
-    })
-  }, [user, id])
+    if (!user || role !== "student") return
+    getStudentBookings(user.uid)
+      .then((bookings) => {
+        const pending = (bookings || []).some(
+          (b) => b.propertyId === id && b.status === "pending"
+        )
+        setHasPendingBooking(pending)
+      })
+      .catch((err) => console.error("Could not load student bookings:", err.message))
+  }, [user, role, id])
+
+  const isLandlordOwner = user && room && user.uid === room.landlordId
 
   const handleContactLandlord = async () => {
-    if (!user || !room) return
-    if (!room.landlordId) return
+    if (!user) {
+      navigate("/login")
+      return
+    }
+    if (!room || !room.landlordId) return
+    if (isLandlordOwner) {
+      setChatError("You are the landlord of this property.")
+      return
+    }
     setChatError("")
     try {
       setChatLoading(true)
@@ -88,6 +99,7 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
       navigate("/login")
       return
     }
+    if (isLandlordOwner) return
     setShowBookingModal(true)
   }
 
@@ -136,9 +148,23 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
             </div>
           )}
 
-          {error && (
-            <div className="px-5 py-4 bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/40 rounded-2xl text-red-600 dark:text-red-400 text-sm font-semibold">
-              ⚠ {error}
+          {error && !loading && !room && (
+            <div className="text-center py-20 px-6 bg-white dark:bg-dark-900/50 border border-gray-100 dark:border-white/5 rounded-[28px] shadow-sm max-w-md mx-auto my-12">
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                🏠
+              </div>
+              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">
+                Property Not Found
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                This room listing may have been removed or is no longer available.
+              </p>
+              <button
+                onClick={() => navigate("/find-rooms")}
+                className="px-6 py-3 rounded-full text-xs font-bold text-white bg-[#06D6A0] hover:bg-[#05c490] shadow-md transition-all"
+              >
+                Browse All Rooms
+              </button>
             </div>
           )}
 
@@ -280,20 +306,36 @@ function RoomDetail({ darkMode, toggleDarkMode }) {
                     </p>
 
                     <div className="mt-6 space-y-3">
-                      <button
-                        onClick={handleRequestBookingClick}
-                        disabled={hasPendingBooking}
-                        className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {hasPendingBooking ? "Request Pending" : "Request Booking"}
-                      </button>
-                      <button
-                        onClick={handleContactLandlord}
-                        disabled={chatLoading}
-                        className="w-full py-3 rounded-2xl text-sm font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 disabled:opacity-50"
-                      >
-                        {chatLoading ? "Opening chat..." : "Contact Landlord"}
-                      </button>
+                      {isLandlordOwner ? (
+                        <div className="p-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/40 rounded-2xl text-center">
+                          <p className="text-xs font-bold text-teal-700 dark:text-teal-300">
+                            🏡 This is your property listing
+                          </p>
+                          <button
+                            onClick={() => navigate("/profile/landlord")}
+                            className="mt-2 text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline"
+                          >
+                            Manage My Properties →
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={handleRequestBookingClick}
+                            disabled={hasPendingBooking || role === "landlord"}
+                            className="w-full py-3 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-teal-500 hover:from-primary-700 hover:to-teal-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {hasPendingBooking ? "Request Pending" : "Request Booking"}
+                          </button>
+                          <button
+                            onClick={handleContactLandlord}
+                            disabled={chatLoading}
+                            className="w-full py-3 rounded-2xl text-sm font-bold text-primary-600 dark:text-primary-400 border border-primary-200/60 dark:border-primary-800/40 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all duration-200 disabled:opacity-50"
+                          >
+                            {chatLoading ? "Opening chat..." : "Contact Landlord"}
+                          </button>
+                        </>
+                      )}
                       {chatError && (
                         <p className="text-xs font-semibold text-red-500 text-center mt-1">{chatError}</p>
                       )}

@@ -58,7 +58,7 @@ export function DataTable({ columns, rows, emptyMessage = "No data found." }) {
         <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
           <span className="text-2xl">📋</span>
         </div>
-        <p className="font-medium text-gray-600 dark:text-gray-300">{emptyMessage}</p>
+        <div className="font-medium text-gray-600 dark:text-gray-300">{emptyMessage}</div>
       </div>
     )
   }

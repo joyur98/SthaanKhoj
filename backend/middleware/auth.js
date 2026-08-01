@@ -19,10 +19,13 @@ export const authenticate = async (req, res, next) => {
 
     // Try the users/{uid} doc first (may hold role for some accounts)
     const userSnap = await db.collection("users").doc(decoded.uid).get();
-    if (userSnap.exists) req.userDoc = userSnap.data();
+    if (userSnap.exists) {
+      req.userDoc = userSnap.data();
+    }
 
-    // Fallback: resolve role from admins, students, or landlords collections.
-    if (!req.user.role && !req.userDoc?.role) {
+    // Fallback: resolve role from admins, students, or landlords collections if role is not found in token or userDoc.
+    const currentRole = req.user.role || req.userDoc?.role;
+    if (!currentRole) {
       const adminSnap = await db.collection("admins").doc(decoded.uid).get();
       if (adminSnap.exists) {
         req.resolvedRole = "admin";

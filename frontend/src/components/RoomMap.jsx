@@ -11,8 +11,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 })
 
-const KU_LAT = 27.620532425085997
-const KU_LNG = 85.53841251986667
+const KU_LAT = 27.62056
+const KU_LNG = 85.53831
 const NEPAL_TRAFFIC_MULTIPLIER = 1.8
 
 // Custom KU Gate marker - pulsing green double ring with graduate pin
@@ -257,9 +257,13 @@ function RouteFromKU({ lat, lng }) {
   useEffect(() => {
     if (!lat || !lng) return
 
+    const GATE_ACCESS_LAT = 27.6188
+    const GATE_ACCESS_LNG = 85.5380
+
     const routingControl = L.Routing.control({
       waypoints: [
         L.latLng(KU_LAT, KU_LNG),
+        L.latLng(GATE_ACCESS_LAT, GATE_ACCESS_LNG),
         L.latLng(lat, lng),
       ],
       router: L.Routing.osrmv1({
@@ -554,7 +558,9 @@ export function ViewLocationMap({ lat, lng, title }) {
     const fetchRoadDistance = async () => {
       try {
         setLoading(true)
-        const url = `https://router.project-osrm.org/route/v1/driving/${KU_LNG},${KU_LAT};${lng},${lat}?overview=false`
+        const GATE_ACCESS_LAT = 27.6188
+        const GATE_ACCESS_LNG = 85.5380
+        const url = `https://router.project-osrm.org/route/v1/driving/${KU_LNG},${KU_LAT};${GATE_ACCESS_LNG},${GATE_ACCESS_LAT};${lng},${lat}?overview=false`
         const res = await fetch(url)
         const data = await res.json()
         if (data.routes?.[0]) {

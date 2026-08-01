@@ -132,9 +132,9 @@ service cloud.firestore {
       // they participate in, so broad list access is safe here.
       allow list: if isSignedIn();
 
-      // CREATE: The creator must be the student referenced in the new document.
+      // CREATE: The creator must be a participant (student or landlord) referenced in the new document.
       allow create: if isSignedIn() &&
-        request.resource.data.studentId == request.auth.uid &&
+        (request.resource.data.studentId == request.auth.uid || request.resource.data.landlordId == request.auth.uid) &&
         request.resource.data.studentId is string &&
         request.resource.data.landlordId is string &&
         request.resource.data.propertyId is string;

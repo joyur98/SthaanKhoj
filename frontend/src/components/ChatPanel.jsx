@@ -53,6 +53,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
   const [charLimit] = useState(2000)
 
   const bottomRef = useRef(null)
+  const scrollContainerRef = useRef(null)
   const inputRef = useRef(null)
   const typingTimeoutRef = useRef(null)
   const searchInputRef = useRef(null)
@@ -118,7 +119,12 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
     const unsubscribeMessages = listenToMessages(chatId, (msgs) => {
       setMessages(msgs)
       setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" })
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({
+            top: scrollContainerRef.current.scrollHeight,
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+          })
+        }
       }, 100)
     })
 
@@ -390,7 +396,7 @@ function ChatPanel({ chatId, hideBackButton = false, onInvalidChat }) {
       </AnimatePresence>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1 bg-[#FBF7F0]/20 dark:bg-[#111827]/10">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-1 bg-[#FBF7F0]/20 dark:bg-[#111827]/10">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <TypingDots />

@@ -9,7 +9,7 @@ const AMENITIES_OPTIONS = [
   "Furnished", "Kitchen", "Laundry", "Security", "Hot Water", "Balcony"
 ]
 
-const ROOM_TYPES = ["room", "flat", "studio", "house", "pg"]
+const ROOM_TYPES = ["room", "flat", "studio", "house", "pg", "office"]
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
@@ -253,7 +253,7 @@ function PostRoom({ darkMode, toggleDarkMode }) {
                   >
                     {ROOM_TYPES.map((t) => (
                       <option key={t} value={t} className="dark:bg-dark-900">
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                        {t === "pg" ? "PG" : t.charAt(0).toUpperCase() + t.slice(1)}
                       </option>
                     ))}
                   </select>

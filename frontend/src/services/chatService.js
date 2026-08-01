@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  setDoc,
   addDoc,
   getDoc,
   query,
@@ -23,31 +22,25 @@ export const getOrCreateChat = async (studentId, landlordId, propertyId, propert
     throw new Error("Missing studentId, landlordId, or propertyId")
   }
 
-  const chatId = getChatId(studentId, propertyId)
-  const chatRef = doc(db, "chats", chatId)
-  const chatSnap = await getDoc(chatRef)
+  // Route through the Express backend to avoid adblocker / Firestore rule issues
+  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+  const { getAuth } = await import("firebase/auth")
+  const auth = getAuth()
+  const token = await auth.currentUser?.getIdToken(true)
 
-  if (!chatSnap.exists()) {
-    await setDoc(chatRef, {
-      chatId,
-      studentId,
-      landlordId,
-      propertyId,
-      propertyTitle: propertyTitle || "Room",
-      participants: [studentId, landlordId],
-      lastMessage: "",
-      lastMessageTime: serverTimestamp(),
-      lastSenderId: "",
-      unreadStudent: 0,
-      unreadLandlord: 0,
-      typingStudent: false,
-      typingLandlord: false,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    })
-  }
+  const res = await fetch(`${BASE_URL}/chats/get-or-create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ studentId, landlordId, propertyId, propertyTitle }),
+  })
 
-  return chatId
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || "Failed to create chat")
+
+  return data.chatId
 }
 
 export const sendMessage = async (chatId, senderId, text) => {

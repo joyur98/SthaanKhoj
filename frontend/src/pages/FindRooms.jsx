@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom"
 import { AlertTriangle, Home, Phone, User, Mail } from "lucide-react"
 import { getProperties, toggleSavedProperty, getSavedProperties } from "../services/api"
 import Navbar from "../components/Navbar"
+import { useAuth } from "../context/AuthContext"
 
 const ROOM_TYPE_LABELS = {
   room: "Room", flat: "Flat", studio: "Studio", house: "House", pg: "PG",
 }
 
 // KU Main Gate coordinates
-const KU_LAT = 27.6193
-const KU_LNG = 85.5387
+const KU_LAT = 27.62056
+const KU_LNG = 85.53831
 
 const getDistanceFromKU = (lat, lng) => {
   if (!lat || !lng) return null
@@ -29,6 +30,7 @@ const getDistanceFromKU = (lat, lng) => {
 
 function FindRooms({ darkMode, toggleDarkMode }) {
   const navigate = useNavigate()
+  const { user, role } = useAuth()
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -60,6 +62,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
   }, [applied, fetchRooms])
 
   useEffect(() => {
+    if (!user || role !== "student") return
     const loadSaved = async () => {
       try {
         const properties = await getSavedProperties()
@@ -70,7 +73,7 @@ function FindRooms({ darkMode, toggleDarkMode }) {
       }
     }
     loadSaved()
-  }, [])
+  }, [user, role])
 
   const handleFilterChange = (e) =>
     setFilters((f) => ({ ...f, [e.target.name]: e.target.value }))

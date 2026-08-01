@@ -55,6 +55,9 @@ function AdminRoute({ user, children }) {
 function AppRoutes({ user, darkMode, toggleDarkMode }) {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith("/admin")
+  const isAuthRoute = ["/", "/login", "/verify-email", "/verification-success"].includes(location.pathname)
+
+  const showAIChatbot = Boolean(user && user.emailVerified && !isAdminRoute && !isAuthRoute)
 
   return (
     <>
@@ -86,7 +89,7 @@ function AppRoutes({ user, darkMode, toggleDarkMode }) {
         <Route path="/admin/fraud" element={<AdminRoute user={user}><AdminFraud darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></AdminRoute>} />
       </Routes>
 
-      {user && !isAdminRoute && <AIChatbot darkMode={darkMode} />}
+      {showAIChatbot && <AIChatbot darkMode={darkMode} />}
     </>
   )
 }
