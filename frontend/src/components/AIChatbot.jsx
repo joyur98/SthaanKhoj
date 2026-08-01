@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { Sparkles } from "lucide-react"
-import { chatbotSearch } from "../services/api"
 import { parseMessage, generateResponse } from "../services/chatbotEngine"
 
 const ROOM_TYPE_LABELS = {
@@ -16,9 +15,9 @@ function AIChatbot({ darkMode }) {
       role: "bot",
       text: "Namaste! 🙏 I'm **SthaanBot**, your AI room-finding assistant. Tell me what you're looking for — location, budget, amenities — and I'll search for you!",
       suggestions: [
-        "Rooms in Dhulikhel",
+        "Find in Dhulikhel",
         "Under 10K with WiFi",
-        "Furnished rooms",
+        "Furnished listings",
         "Help",
       ],
     },
@@ -81,8 +80,17 @@ function AIChatbot({ darkMode }) {
         if (filters?.roomType) apiFilters.roomType = filters.roomType
         if (filters?.available) apiFilters.available = filters.available
 
-        const res = await chatbotSearch(apiFilters)
-        const results = res.data || []
+        // Use direct fetch (no auth token needed — route is public)
+        const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+        const httpRes = await fetch(`${BASE_URL}/properties/chatbot-search`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(apiFilters),
+        })
+        const json = await httpRes.json()
+        const results = json.data || []
+
+        console.log("[SthaanBot] filters:", apiFilters, "| results:", results.length)
 
         await new Promise((r) => setTimeout(r, 600))
         setIsTyping(false)
@@ -90,11 +98,12 @@ function AIChatbot({ darkMode }) {
         const response = generateResponse(intent, filters, results)
         addMessage({ role: "bot", ...response })
       } catch (err) {
+        console.error("[SthaanBot] Search error:", err)
         setIsTyping(false)
         addMessage({
           role: "bot",
-          text: `Oops, something went wrong 😓: ${err.message}. Please try again!`,
-          suggestions: ["Try again", "Help"],
+          text: `Oops, I couldn't connect to the server 😓. Please make sure you're connected and try again!`,
+          suggestions: ["Try again", "Show all rooms", "Help"],
         })
       }
     } else {

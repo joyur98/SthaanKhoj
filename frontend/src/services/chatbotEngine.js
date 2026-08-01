@@ -9,6 +9,7 @@ const KNOWN_LOCATIONS = [
   "hokse", "kattike", "phulbari", "sankhu", "nagarkot",
   "bhaktapur", "kathmandu", "lalitpur", "kirtipur",
   "ku", "kathmandu university", "ku gate", "ku main gate",
+  "panchkhal", "sanga", "khopasi", "nala", "charikot",
 ];
 
 const AMENITIES_MAP = {
@@ -39,8 +40,6 @@ const AMENITIES_MAP = {
 };
 
 const ROOM_TYPE_MAP = {
-  room: "room",
-  rooms: "room",
   flat: "flat",
   flats: "flat",
   apartment: "flat",
@@ -51,6 +50,10 @@ const ROOM_TYPE_MAP = {
   houses: "house",
   pg: "pg",
   "paying guest": "pg",
+  office: "office",
+  offices: "office",
+  "office room": "office",
+  "office space": "office",
 };
 
 const PRICE_KEYWORDS = {
@@ -209,8 +212,8 @@ export function parseMessage(message) {
   // If no filters extracted at all, check if it smells like a search
   const hasFilters = Object.keys(filters).length > 0;
   if (!hasFilters) {
-    // Check for generic search keywords
-    if (/\b(find|search|show|list|get|look|need|want|any|browse)\b/i.test(lower)) {
+    // Check for generic search keywords (including "all rooms", "show all", "rooms available" etc.)
+    if (/\b(find|search|show|list|get|look|need|want|any|browse|all|available)\b/i.test(lower)) {
       return { intent: "search", filters: {} };
     }
     return { intent: "unknown", filters: null };
@@ -222,8 +225,8 @@ export function parseMessage(message) {
 // ── Response Generator ────────────────────────────────────────────────────────
 const GREETINGS = [
   "Namaste! 🙏 I'm **SthaanBot**, your room-finding assistant. Tell me what you're looking for — location, budget, amenities — and I'll search for you!",
-  "Hello! 👋 I can help you find the perfect room near KU. Just describe what you need — like *\"room in Dhulikhel under 10K with WiFi\"*",
-  "Hey there! 🏠 Ready to find your ideal room? Tell me your preferences and I'll search our listings for you!",
+  "Hello! 👋 I can help you find the perfect room near KU. Just describe what you need — like *\"flat in Dhulikhel under 10K with WiFi\"*",
+  "Hey there! 🏠 Ready to find your ideal space? Tell me your preferences and I'll search our listings for you!",
 ];
 
 const THANKS_RESPONSES = [
@@ -270,10 +273,10 @@ export function generateResponse(intent, filters, results) {
       return {
         text: random(GREETINGS),
         suggestions: [
-          "Rooms in Dhulikhel",
+          "Find in Dhulikhel",
           "Under 10K",
           "Furnished with WiFi",
-          "Show all rooms",
+          "Show all listings",
         ],
       };
 
@@ -290,21 +293,34 @@ export function generateResponse(intent, filters, results) {
       return {
         text: HELP_TEXT,
         suggestions: [
-          "Cheap rooms in Dhulikhel",
+          "Cheap listings in Dhulikhel",
           "Furnished flat with WiFi",
-          "Rooms under 8000",
+          "Under 8000",
           "Available now",
         ],
       };
 
     case "search": {
       if (!results || results.length === 0) {
+        // Build a context string from active filters
+        const filterParts = [];
+        if (filters?.location) filterParts.push(`in **${filters.location}**`);
+        if (filters?.maxPrice) filterParts.push(`under **NPR ${Number(filters.maxPrice).toLocaleString()}**`);
+        if (filters?.minPrice) filterParts.push(`above **NPR ${Number(filters.minPrice).toLocaleString()}**`);
+        if (filters?.amenities?.length) filterParts.push(`with **${filters.amenities.join(", ")}**`);
+        if (filters?.roomType) filterParts.push(`(type: **${filters.roomType}**)`);
+
+        const filterContext = filterParts.length > 0 ? ` ${filterParts.join(" ")}` : "";
+        const noResultText = filterContext
+          ? `No rooms found${filterContext} 😕. Try loosening your filters — remove some amenities, widen the budget, or try a different location.`
+          : `No rooms are listed yet 😕. Check back soon — new rooms are added regularly! You can also try **Show all rooms**.`;
+
         return {
-          text: random(NO_RESULTS_RESPONSES),
+          text: noResultText,
           suggestions: [
-            "Show all rooms",
-            "Rooms under 15K",
-            "Rooms in Dhulikhel",
+            "Show all listings",
+            "Under 15K",
+            "In Dhulikhel",
             "Help",
           ],
         };
@@ -329,15 +345,15 @@ export function generateResponse(intent, filters, results) {
 
       const text =
         results.length === 1
-          ? `Found **1 room**${filterDesc}! Here it is:`
-          : `Found **${results.length} rooms**${filterDesc}! Here are the results:`;
+          ? `Found **1 listing**${filterDesc}! Here it is:`
+          : `Found **${results.length} listings**${filterDesc}! Here are the results:`;
 
       return {
         text,
         results,
         suggestions: [
           "Refine search",
-          "Show cheaper",
+          "Cheaper options",
           "Different location",
           "Help",
         ],
@@ -350,8 +366,8 @@ export function generateResponse(intent, filters, results) {
         text: random(UNKNOWN_RESPONSES),
         suggestions: [
           "Help",
-          "Show all rooms",
-          "Rooms in Dhulikhel",
+          "Show all listings",
+          "Find in Dhulikhel",
           "Under 10K with WiFi",
         ],
       };
