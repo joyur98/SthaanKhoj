@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet-routing-machine"
@@ -305,11 +305,30 @@ function RouteFromKU({ lat, lng }) {
 
 function MapZoomControls() {
   const map = useMap()
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      L.DomEvent.disableClickPropagation(ref.current)
+      L.DomEvent.disableScrollPropagation(ref.current)
+    }
+  }, [])
+
   return (
-    <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-1.5">
+    <div
+      ref={ref}
+      className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-1.5"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
       <button
         type="button"
-        onClick={() => map.zoomIn()}
+        onClick={(e) => {
+          e.stopPropagation()
+          map.zoomIn()
+        }}
         className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
         title="Zoom In"
       >
@@ -317,7 +336,10 @@ function MapZoomControls() {
       </button>
       <button
         type="button"
-        onClick={() => map.zoomOut()}
+        onClick={(e) => {
+          e.stopPropagation()
+          map.zoomOut()
+        }}
         className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
         title="Zoom Out"
       >
@@ -329,15 +351,38 @@ function MapZoomControls() {
 
 function MapRecenterControl({ center }) {
   const map = useMap()
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      L.DomEvent.disableClickPropagation(ref.current)
+      L.DomEvent.disableScrollPropagation(ref.current)
+    }
+  }, [])
+
   return (
-    <button
-      type="button"
-      onClick={() => map.flyTo(center, 16)}
-      className="absolute bottom-28 right-4 z-[1000] w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
-      title="Recenter Map"
+    <div
+      ref={ref}
+      className="absolute bottom-28 right-4 z-[1000]"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
-      <span className="text-base select-none">🧭</span>
-    </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (center) {
+            map.flyTo(center, 16)
+          }
+        }}
+        className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        title="Recenter Map"
+      >
+        <span className="text-base select-none">🧭</span>
+      </button>
+    </div>
   )
 }
 
@@ -352,7 +397,13 @@ export function PickLocationMap({ lat, lng, onLocationSelect }) {
       </p>
 
       <div className="relative rounded-2xl overflow-hidden border border-gray-200/80 dark:border-white/10 h-80 shadow-md">
-        <div className="absolute top-3 right-3 z-[1000] flex gap-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200/20 dark:border-white/10 p-1 rounded-xl shadow-lg">
+        <div
+          className="absolute top-3 right-3 z-[1000] flex gap-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200/20 dark:border-white/10 p-1 rounded-xl shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             onClick={() => setMapType("voyager")}
@@ -443,27 +494,46 @@ export function PickLocationMap({ lat, lng, onLocationSelect }) {
 
 function MapFitRouteControl({ roomCoords }) {
   const map = useMap()
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      L.DomEvent.disableClickPropagation(ref.current)
+      L.DomEvent.disableScrollPropagation(ref.current)
+    }
+  }, [])
+
   useEffect(() => {
     if (!roomCoords?.[0]) return
     const bounds = L.latLngBounds([[KU_LAT, KU_LNG], roomCoords])
     map.fitBounds(bounds, { padding: [50, 50] })
   }, [map, roomCoords])
 
-  const fit = () => {
+  const fit = (e) => {
+    e.stopPropagation()
     if (!roomCoords?.[0]) return
     const bounds = L.latLngBounds([[KU_LAT, KU_LNG], roomCoords])
     map.flyToBounds(bounds, { padding: [50, 50], duration: 1.2 })
   }
 
   return (
-    <button
-      type="button"
-      onClick={fit}
-      className="absolute bottom-28 right-4 z-[1000] w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
-      title="Recenter Route View"
+    <div
+      ref={ref}
+      className="absolute bottom-28 right-4 z-[1000]"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
-      <span className="text-base select-none">🧭</span>
-    </button>
+      <button
+        type="button"
+        onClick={fit}
+        className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-200 dark:border-white/10 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        title="Recenter Route View"
+      >
+        <span className="text-base select-none">🧭</span>
+      </button>
+    </div>
   )
 }
 
