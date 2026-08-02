@@ -47,6 +47,70 @@ router.get("/users", async (req, res, next) => {
 });
 
 /**
+ * DELETE /api/admin/users/:uid
+ * Permanently remove a user from Firebase Auth + all Firestore collections.
+ * This frees the email so the same address can register again.
+ */
+router.delete("/users/:uid", async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+
+    // Prevent an admin from deleting themselves
+    if (uid === req.user.uid) {
+      return res.status(400).json({ error: "You cannot delete your own account." });
+    }
+
+    // Fetch user doc to know their role
+    const userSnap = await db.collection("users").doc(uid).get();
+    const userData = userSnap.exists ? userSnap.data() : null;
+    const role = userData?.role;
+
+    // 1. Delete from Firebase Authentication (frees the email)
+    await auth.deleteUser(uid);
+
+    // 2. Delete from the `users` collection
+    if (userSnap.exists) {
+      await db.collection("users").doc(uid).delete();
+    }
+
+    // 3. Delete role-specific profile document
+    if (role === "student") {
+      const studentSnap = await db.collection("students").doc(uid).get();
+      if (studentSnap.exists) await db.collection("students").doc(uid).delete();
+    } else if (role === "landlord") {
+      const landlordSnap = await db.collection("landlords").doc(uid).get();
+      if (landlordSnap.exists) await db.collection("landlords").doc(uid).delete();
+
+      // 4. Soft-delete all properties owned by this landlord
+      const propSnap = await db.collection("properties").where("landlordId", "==", uid).get();
+      const batch = db.batch();
+      propSnap.docs.forEach((d) =>
+        batch.update(d.ref, { isActive: false, updatedAt: new Date().toISOString() })
+      );
+      if (!propSnap.empty) await batch.commit();
+    }
+
+    // 5. Cancel any open bookings where this user is the student
+    const bookingSnap = await db
+      .collection("bookings")
+      .where("studentId", "==", uid)
+      .where("status", "==", "pending")
+      .get();
+    if (!bookingSnap.empty) {
+      const batchB = db.batch();
+      bookingSnap.docs.forEach((d) =>
+        batchB.update(d.ref, { status: "cancelled", updatedAt: new Date().toISOString() })
+      );
+      await batchB.commit();
+    }
+
+    res.json({ message: "User permanently deleted. The email is now free to re-register." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * PATCH /api/admin/users/:uid/disable
  */
 router.patch("/users/:uid/disable", async (req, res, next) => {

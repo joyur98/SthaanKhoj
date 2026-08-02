@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { 
-  User, Mail, Calendar, Shield, UserCog, 
+  User, Mail, Shield, UserCog, 
   UserCheck, UserX, Crown, Users as UsersIcon,
-  Search, Filter, TrendingUp, TrendingDown
+  Search, Trash2, AlertTriangle
 } from "lucide-react"
 import AdminLayout from "../../components/admin/AdminLayout"
 import {
   PageHeader, LoadingState, ErrorBanner, SuccessBanner,
   DataTable, Badge, ActionButton, formatDate,
 } from "../../components/admin/AdminUI"
-import { getAdminUsers, disableAdminUser, setAdminUserRole } from "../../services/adminService"
+import { getAdminUsers, disableAdminUser, setAdminUserRole, deleteAdminUser } from "../../services/adminService"
 
 const ROLE_VARIANT = { 
   student: "info", 
@@ -34,6 +34,8 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
   const [actionId, setActionId] = useState(null)
   const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [deleteTarget, setDeleteTarget] = useState(null)  // user object to delete
+  const [deleting, setDeleting] = useState(false)
 
   // Animation variants
   const fadeInUp = {
@@ -78,6 +80,23 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
       setError(err.message)
     } finally {
       setActionId(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    setError("")
+    setSuccess("")
+    try {
+      await deleteAdminUser(deleteTarget.id)
+      setSuccess(`"${deleteTarget.fullName || deleteTarget.email}" has been permanently deleted. The email is now free to re-register.`)
+      setDeleteTarget(null)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -256,6 +275,20 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
               <UserCog className="w-4 h-4" />
             </motion.button>
           )}
+
+          {/* Delete — only for disabled users */}
+          {r.isActive === false && (
+            <motion.button
+              whileHover={!reduceMotion ? { scale: 1.1 } : {}}
+              whileTap={!reduceMotion ? { scale: 0.9 } : {}}
+              onClick={() => setDeleteTarget(r)}
+              disabled={actionId === r.id}
+              className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all disabled:opacity-50 border border-red-200 dark:border-red-800"
+              title="Permanently Delete User"
+            >
+              <Trash2 className="w-4 h-4" />
+            </motion.button>
+          )}
         </div>
       ),
     },
@@ -400,6 +433,109 @@ function AdminUsers({ darkMode, toggleDarkMode }) {
           </motion.div>
         </AnimatePresence>
       )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backdropFilter: "blur(6px)", backgroundColor: "rgba(0,0,0,0.55)" }}
+            onClick={() => !deleting && setDeleteTarget(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/40 w-full max-w-md overflow-hidden"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-red-500 to-rose-600 p-5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-base">Permanently Delete User</h2>
+                  <p className="text-red-100 text-xs mt-0.5">This action cannot be undone</p>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-5">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                  You are about to permanently delete:
+                </p>
+                <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {deleteTarget.fullName ? deleteTarget.fullName.charAt(0).toUpperCase() : "?"}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                      {deleteTarget.fullName || "Unnamed User"}
+                    </p>
+                    <p className="text-xs text-gray-400">{deleteTarget.email}</p>
+                    <p className="text-xs text-gray-400 capitalize">{deleteTarget.role}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">What will be removed:</p>
+                <ul className="space-y-1.5 mb-5">
+                  {[
+                    "Firebase Auth account (email freed for re-registration)",
+                    "User profile document",
+                    deleteTarget.role === "landlord" ? "Landlord profile & all their property listings" : "Student profile",
+                    "Any pending booking requests",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <span className="w-4 h-4 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold">{i + 1}</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={!reduceMotion ? { scale: 1.02 } : {}}
+                    whileTap={!reduceMotion ? { scale: 0.98 } : {}}
+                    onClick={() => setDeleteTarget(null)}
+                    disabled={deleting}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={!reduceMotion ? { scale: 1.02 } : {}}
+                    whileTap={!reduceMotion ? { scale: 0.98 } : {}}
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white text-sm font-bold shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {deleting ? (
+                      <>
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full inline-block"
+                        />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4" />
+                        Yes, Delete Permanently
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AdminLayout>
   )
 }

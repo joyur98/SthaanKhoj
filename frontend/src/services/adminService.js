@@ -26,6 +26,8 @@ export const disableAdminUser = (uid, disabled) =>
     method: "PATCH",
     body: JSON.stringify({ disabled }),
   });
+export const deleteAdminUser = (uid) =>
+  authRequest(`/admin/users/${uid}`, { method: "DELETE" });
 export const setAdminUserRole = (uid, role) =>
   authRequest(`/admin/users/${uid}/role`, {
     method: "PATCH",
