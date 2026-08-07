@@ -1,9 +1,9 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
-import dotenv from "dotenv";
+import express from "express";//creates backend server
+import cors from "cors";//allows react frontend to communicate with the backend server
+import helmet from "helmet";//adds security headers
+import rateLimit from "express-rate-limit";//prevents too many requests
+import morgan from "morgan";//logs every HTTP request
+import dotenv from "dotenv";//loads variables from .env file
 
 import authRoutes from "./routes/auth.js";
 import studentRoutes from "./routes/students.js";
@@ -63,7 +63,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);//if any requests come to /api/auth then send it to authRoutes
 app.use("/api/students", studentRoutes);
 app.use("/api/landlords", landlordRoutes);
 app.use("/api/properties", propertyRoutes);

@@ -101,7 +101,7 @@ function App() {
           <Route path="/profile/landlord" element={<ProtectedRoute user={user}><LandlordProfile darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute user={user}><PriceAnalytics darkMode={darkMode} toggleDarkMode={toggleDarkMode} /></ProtectedRoute>} />
 
-          {/* ✅ ADMIN ROUTES - DO NOT REMOVE */}
+          {/*  ADMIN ROUTES - DO NOT REMOVE */}
           <Route path="/admin/dashboard" element={<AdminDashboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           <Route path="/admin/users" element={<AdminUsers darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           <Route path="/admin/properties" element={<AdminProperties darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
